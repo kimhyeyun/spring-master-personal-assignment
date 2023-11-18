@@ -20,6 +20,10 @@ public class User {
     @Id private String username;
     @Column(nullable = false) private String password;
 
+    @Column(nullable = false)
+    @Enumerated(value = EnumType.STRING)
+    private UserRoleEnum role;
+
     @OneToMany(mappedBy = "user")
     private List<Todo> todoList = new ArrayList<>();
 }
