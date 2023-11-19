@@ -1,6 +1,7 @@
 package com.example.springmasterpersonalassignment.controller;
 
 import com.example.springmasterpersonalassignment.dto.request.SignupRequestDto;
+import com.example.springmasterpersonalassignment.dto.response.CommentResponseDto;
 import com.example.springmasterpersonalassignment.dto.response.TodoResponseDto;
 import com.example.springmasterpersonalassignment.security.UserDetailsImpl;
 import com.example.springmasterpersonalassignment.service.UserService;
@@ -42,9 +43,15 @@ public class UserController {
 
 
     // 확인을 위한 메서드 //
-    @GetMapping("/info")
+    @GetMapping("/todos")
     @ResponseBody
-    public List<TodoResponseDto> getUserInfo(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public List<TodoResponseDto> getUserTodos(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         return userService.findTodoList(userDetails.getUser().getUsername());
+    }
+
+    @GetMapping("/comments")
+    @ResponseBody
+    public List<CommentResponseDto> getUserComments(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return userService.findCommentList(userDetails.getUser().getUsername());
     }
 }

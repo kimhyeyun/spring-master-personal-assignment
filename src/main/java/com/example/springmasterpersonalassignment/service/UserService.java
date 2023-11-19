@@ -1,6 +1,7 @@
 package com.example.springmasterpersonalassignment.service;
 
 import com.example.springmasterpersonalassignment.dto.request.SignupRequestDto;
+import com.example.springmasterpersonalassignment.dto.response.CommentResponseDto;
 import com.example.springmasterpersonalassignment.dto.response.TodoResponseDto;
 import com.example.springmasterpersonalassignment.entity.User;
 import com.example.springmasterpersonalassignment.repository.UserRepository;
@@ -49,4 +50,9 @@ public class UserService {
         return user.get().getTodoList().stream().map(TodoResponseDto::of).toList();
     }
 
+    public List<CommentResponseDto> findCommentList(String username) {
+        Optional<User> user = userRepository.findByUsername(username);
+
+        return user.get().getCommentList().stream().map(CommentResponseDto::of).toList();
+    }
 }

@@ -21,4 +21,5 @@ public class User {
     @Column(nullable = false) private String password;
 
     @OneToMany(mappedBy = "user") private List<Todo> todoList = new ArrayList<>();
+    @OneToMany(mappedBy = "user") private List<Comment> commentList = new ArrayList<>();
 }
