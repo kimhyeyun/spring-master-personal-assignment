@@ -1,5 +1,6 @@
 package com.example.springmasterpersonalassignment.entity;
 
+import com.example.springmasterpersonalassignment.dto.request.CommentRequestDto;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -26,4 +27,7 @@ public class Comment extends BaseTimeEntity {
     @JoinColumn(name = "username", nullable = false)
     private User user;
 
+    public void modify(CommentRequestDto requestDto) {
+        this.content = requestDto.getContent();
+    }
 }

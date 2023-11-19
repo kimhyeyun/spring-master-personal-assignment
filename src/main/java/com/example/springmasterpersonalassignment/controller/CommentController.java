@@ -48,4 +48,9 @@ public class CommentController {
     public List<CommentResponseDto> getCommentListByTodoId(@PathVariable Long todoId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return commentService.getCommentListByTodoId(todoId, userDetails.getUser());
     }
+
+    @PutMapping("/{commentId}")
+    public ResponseEntity<?> modifyComment(@PathVariable Long commentId, @Valid @RequestBody CommentRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return commentService.modifyComment(commentId, requestDto, userDetails.getUser());
+    }
 }
