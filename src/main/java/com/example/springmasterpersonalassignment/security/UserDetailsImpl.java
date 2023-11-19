@@ -1,7 +1,6 @@
 package com.example.springmasterpersonalassignment.security;
 
 import com.example.springmasterpersonalassignment.entity.User;
-import com.example.springmasterpersonalassignment.entity.UserRoleEnum;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -19,8 +18,7 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        UserRoleEnum role = user.getRole();
-        String authority = role.getAuthority();
+        String authority = "USER";
 
         SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority(authority);
         Collection<GrantedAuthority> authorities = new ArrayList<>();
