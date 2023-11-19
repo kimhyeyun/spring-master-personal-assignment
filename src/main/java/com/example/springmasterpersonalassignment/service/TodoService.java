@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Slf4j(topic = "TodoService")
 @Service
 @RequiredArgsConstructor
@@ -27,5 +29,11 @@ public class TodoService {
         todoRepository.save(todo);
 
         return ResponseEntity.status(HttpStatus.OK).body(TodoResponseDto.of(todo));
+    }
+
+    public List<TodoResponseDto> getTodoList() {
+        List<Todo> todos = todoRepository.findAllByOrderByCreatedAtDesc();
+
+        return todos.stream().map(TodoResponseDto::of).toList();
     }
 }

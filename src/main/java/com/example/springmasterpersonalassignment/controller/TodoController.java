@@ -18,14 +18,14 @@ import java.util.List;
 
 @Slf4j(topic = "TodoController")
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/todos")
 @RequiredArgsConstructor
 public class TodoController {
 
     private final TodoService todoService;
 
     @ResponseBody
-    @PostMapping("/todo")
+    @PostMapping()
     public ResponseEntity<?> createTodo(@RequestBody @Valid TodoRequestDto requestDto,
                                                       BindingResult bindingResult,
                                                       @AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -39,5 +39,10 @@ public class TodoController {
         }
 
         return todoService.createTodo(requestDto, userDetails.getUser());
+    }
+
+    @GetMapping()
+    public List<TodoResponseDto> getTodoList() {
+        return todoService.getTodoList();
     }
 }
