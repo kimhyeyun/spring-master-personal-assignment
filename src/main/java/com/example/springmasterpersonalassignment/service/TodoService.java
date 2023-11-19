@@ -69,7 +69,7 @@ public class TodoService {
         );
 
         if (!todo.getUser().getUsername().equals(user.getUsername())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("작성자만 수정 가능합니다.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("작성자만 삭제 가능합니다.");
         }
 
         todoRepository.delete(todo);
