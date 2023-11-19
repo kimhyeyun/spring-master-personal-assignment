@@ -15,6 +15,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j(topic = "TodoController")
 @RestController
@@ -42,7 +43,7 @@ public class TodoController {
     }
 
     @GetMapping()
-    public List<TodoResponseDto> getTodoList() {
+    public Map<String,List<TodoResponseDto>> getTodoList() {
         return todoService.getTodoList();
     }
 

@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 @Slf4j(topic = "TodoService")
 @Service
@@ -34,10 +36,16 @@ public class TodoService {
         return ResponseEntity.status(HttpStatus.OK).body(TodoResponseDto.of(todo));
     }
 
-    public List<TodoResponseDto> getTodoList() {
-        List<Todo> todos = todoRepository.findAllByOrderByCreatedAtDesc();
+    public Map<String,List<TodoResponseDto>> getTodoList() {
+        Map<String, List<TodoResponseDto>> map = new TreeMap<>();
 
-        return todos.stream().map(TodoResponseDto::of).toList();
+        List<User> users = userRepository.findAll();
+        for (User user : users) {
+            List<Todo> todos = todoRepository.findAllByUserOrderByCreatedAtDesc(user);
+            map.put(user.getUsername(), todos.stream().map(TodoResponseDto::of).toList());
+        }
+
+        return map;
     }
 
     @Transactional
