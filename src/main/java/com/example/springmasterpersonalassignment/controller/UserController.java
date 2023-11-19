@@ -1,12 +1,17 @@
 package com.example.springmasterpersonalassignment.controller;
 
 import com.example.springmasterpersonalassignment.dto.SignupRequestDto;
+import com.example.springmasterpersonalassignment.dto.TodoResponseDto;
+import com.example.springmasterpersonalassignment.entity.User;
+import com.example.springmasterpersonalassignment.security.UserDetailsImpl;
 import com.example.springmasterpersonalassignment.service.UserService;
 import jakarta.validation.Valid;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +21,7 @@ import java.util.List;
 
 @Slf4j(topic = "UserController")
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -37,4 +42,11 @@ public class UserController {
         return userService.signup(requestDto);
     }
 
+
+    // 확인을 위한 메서드 //
+    @GetMapping("/info")
+    @ResponseBody
+    public List<TodoResponseDto> getUserInfo(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return userService.findTodoList(userDetails.getUser().getUsername());
+    }
 }
