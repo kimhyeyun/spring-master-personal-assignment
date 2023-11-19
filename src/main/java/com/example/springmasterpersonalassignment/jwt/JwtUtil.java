@@ -72,6 +72,7 @@ public class JwtUtil {
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            return true;
         } catch (SecurityException | MalformedJwtException e) {
             logger.error("Invalid JWT Signature, 유효하지 않는 JWT 서명입니다.");
         }catch (ExpiredJwtException e) {
