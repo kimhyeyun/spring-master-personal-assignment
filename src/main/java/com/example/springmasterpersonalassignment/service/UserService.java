@@ -1,6 +1,7 @@
 package com.example.springmasterpersonalassignment.service;
 
 import com.example.springmasterpersonalassignment.dto.SignupRequestDto;
+import com.example.springmasterpersonalassignment.dto.TodoResponseDto;
 import com.example.springmasterpersonalassignment.entity.User;
 import com.example.springmasterpersonalassignment.jwt.JwtUtil;
 import com.example.springmasterpersonalassignment.repository.UserRepository;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j(topic = "userService")
@@ -39,4 +41,13 @@ public class UserService {
 
         return ResponseEntity.status(HttpStatus.OK).body("회원 가입 성공");
     }
+
+
+    // 확인을 위한 메서드 //
+    public List<TodoResponseDto> findTodoList(String username) {
+        Optional<User> user = userRepository.findByUsername(username);
+
+        return user.get().getTodoList().stream().map(TodoResponseDto::of).toList();
+    }
+
 }
