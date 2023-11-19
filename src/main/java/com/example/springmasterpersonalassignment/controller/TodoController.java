@@ -59,4 +59,9 @@ public class TodoController {
     public ResponseEntity<?> deleteTodo(@PathVariable long id, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return todoService.deleteTodo(id, userDetails.getUser());
     }
+
+    @PutMapping("/finish/{id}")
+    public ResponseEntity<?> finishedTodo(@PathVariable Long id, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return todoService.finishedTodo(id, userDetails.getUser());
+    }
 }

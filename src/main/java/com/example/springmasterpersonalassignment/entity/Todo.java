@@ -18,6 +18,7 @@ public class Todo extends BaseTimeEntity {
 
     @Column(nullable = false) private String title;
     @Column(nullable = false) private String content;
+    private boolean isFinished = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "username", nullable = false)
