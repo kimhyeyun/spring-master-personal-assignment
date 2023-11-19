@@ -79,4 +79,18 @@ public class CommentService {
 
         return map;
     }
+
+    @Transactional
+    public ResponseEntity<?> deleteComment(Long commentId, User user) {
+        Comment comment = commentRepository.findById(commentId).orElseThrow(
+                () -> new IllegalArgumentException("존자하지 않는 id 입니다.")
+        );
+
+        if (!comment.getUser().getUsername().equals(user.getUsername())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("작성자만 삭제 가능합니다.");
+        }
+
+        commentRepository.delete(comment);
+        return ResponseEntity.status(HttpStatus.OK).body("삭제 성공");
+    }
 }

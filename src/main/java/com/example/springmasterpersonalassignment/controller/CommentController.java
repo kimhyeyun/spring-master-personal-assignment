@@ -58,4 +58,9 @@ public class CommentController {
     public Map<String, List<CommentResponseDto>> getCommentListByUser(@AuthenticationPrincipal UserDetailsImpl userDetails) {
         return commentService.getCommentListByUser();
     }
+
+    @DeleteMapping("/{commentId}")
+    public ResponseEntity<?> deleteComment(@PathVariable Long commentId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return commentService.deleteComment(commentId, userDetails.getUser());
+    }
 }
