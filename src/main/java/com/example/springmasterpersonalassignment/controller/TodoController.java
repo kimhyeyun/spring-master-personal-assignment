@@ -45,4 +45,13 @@ public class TodoController {
     public List<TodoResponseDto> getTodoList() {
         return todoService.getTodoList();
     }
+
+    @ResponseBody
+    @PutMapping("/{id}")
+    public ResponseEntity<?> modifyTodo(@PathVariable long id,
+                                        @RequestBody @Valid TodoRequestDto requestDto,
+                                        BindingResult bindingResult,
+                                        @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return todoService.modifyTodo(id, requestDto, userDetails.getUser());
+    }
 }

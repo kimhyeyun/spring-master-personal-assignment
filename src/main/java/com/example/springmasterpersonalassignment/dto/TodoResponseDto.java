@@ -1,15 +1,13 @@
 package com.example.springmasterpersonalassignment.dto;
 
 import com.example.springmasterpersonalassignment.entity.Todo;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Builder
 @Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class TodoResponseDto {
@@ -18,6 +16,7 @@ public class TodoResponseDto {
     private String content;
     private String username;
     private LocalDateTime createdAt;
+    private LocalDateTime modifiedAt;
 
     public static TodoResponseDto of(Todo todo) {
         return TodoResponseDto.builder()
@@ -25,6 +24,7 @@ public class TodoResponseDto {
                 .content(todo.getContent())
                 .username(todo.getUser().getUsername())
                 .createdAt(todo.getCreatedAt())
+                .modifiedAt(todo.getModifiedAt())
                 .build();
     }
 }

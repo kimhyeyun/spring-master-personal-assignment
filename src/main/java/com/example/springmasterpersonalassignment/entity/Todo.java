@@ -1,5 +1,6 @@
 package com.example.springmasterpersonalassignment.entity;
 
+import com.example.springmasterpersonalassignment.dto.TodoRequestDto;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,4 +22,9 @@ public class Todo extends BaseTimeEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "username", nullable = false)
     private User user;
+
+    public void modify(TodoRequestDto requestDto) {
+        this.title = requestDto.getTitle();
+        this.content = requestDto.getContent();
+    }
 }
