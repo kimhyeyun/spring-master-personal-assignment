@@ -1,8 +1,10 @@
 package com.example.springmasterpersonalassignment.controller;
 
 import com.example.springmasterpersonalassignment.dto.request.CommentRequestDto;
+import com.example.springmasterpersonalassignment.dto.response.CommentResponseDto;
 import com.example.springmasterpersonalassignment.security.UserDetailsImpl;
 import com.example.springmasterpersonalassignment.service.CommentService;
+import jakarta.persistence.Id;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +16,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j(topic = "CommentController")
 @RestController
@@ -39,5 +42,10 @@ public class CommentController {
         }
 
         return commentService.createComment(todoId, requestDto, userDetails.getUser());
+    }
+
+    @GetMapping("/{todoId}")
+    public List<CommentResponseDto> getCommentListByTodoId(@PathVariable Long todoId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return commentService.getCommentListByTodoId(todoId, userDetails.getUser());
     }
 }

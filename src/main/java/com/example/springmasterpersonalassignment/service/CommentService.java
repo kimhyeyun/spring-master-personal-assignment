@@ -14,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Slf4j(topic = "CommentService")
 @Service
 @RequiredArgsConstructor
@@ -36,5 +38,13 @@ public class CommentService {
         commentRepository.save(comment);
 
         return ResponseEntity.status(HttpStatus.OK).body(CommentResponseDto.of(comment));
+    }
+
+    public List<CommentResponseDto> getCommentListByTodoId(Long todoId, User user) {
+        Todo todo = todoRepository.findById(todoId).orElseThrow(
+                () -> new IllegalArgumentException("존재하지 않는 id 입니다.")
+        );
+
+        return todo.getComments().stream().map(CommentResponseDto::of).toList();
     }
 }
