@@ -36,16 +36,16 @@ public class WebSecurityConfig {
         http.authorizeHttpRequests((request) ->
                 request
                         .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-                        .requestMatchers("/api/user/**").permitAll()
+                        .requestMatchers("/api/users/**").permitAll()
                         .anyRequest().authenticated()
         );
 
         http.formLogin((login) ->
                 login
-                        .loginPage("/api/user/login")
-                        .loginProcessingUrl("/api/user/login")
+                        .loginPage("/api/users/login")
+                        .loginProcessingUrl("/api/users/login")
                         .defaultSuccessUrl("/")
-                        .failureUrl("/api/user/login?error")
+                        .failureUrl("/api/users/login?error")
                         .permitAll()
         );
 
