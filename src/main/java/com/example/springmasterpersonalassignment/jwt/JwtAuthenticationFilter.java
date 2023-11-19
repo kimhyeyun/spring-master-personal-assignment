@@ -37,15 +37,20 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 
         response.addHeader(JwtUtil.AUTHORIZATION_HEADER, token);
         response.setStatus(HttpServletResponse.SC_OK);
+        response.setCharacterEncoding("UTF-8");
 
-//        PrintWriter printWriter = response.getWriter();
-//        printWriter.println("로그인 성공 " + response.getStatus());
+        PrintWriter printWriter = response.getWriter();
+        printWriter.println(response.getStatus() + " : 로그인 성공");
     }
 
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
         log.info("로그인 실패");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setCharacterEncoding("UTF-8");
+
+        PrintWriter printWriter = response.getWriter();
+        printWriter.println(response.getStatus() +" : 회원을 찾을 수 없습니다.");
     }
 
     @Override
