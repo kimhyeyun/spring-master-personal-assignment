@@ -53,4 +53,9 @@ public class CommentController {
     public ResponseEntity<?> modifyComment(@PathVariable Long commentId, @Valid @RequestBody CommentRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return commentService.modifyComment(commentId, requestDto, userDetails.getUser());
     }
+
+    @GetMapping()
+    public Map<String, List<CommentResponseDto>> getCommentListByUser(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return commentService.getCommentListByUser();
+    }
 }

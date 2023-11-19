@@ -7,6 +7,7 @@ import com.example.springmasterpersonalassignment.entity.Todo;
 import com.example.springmasterpersonalassignment.entity.User;
 import com.example.springmasterpersonalassignment.repository.CommentRepository;
 import com.example.springmasterpersonalassignment.repository.TodoRepository;
+import com.example.springmasterpersonalassignment.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -15,12 +16,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 @Slf4j(topic = "CommentService")
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class CommentService {
+    private final UserRepository userRepository;
 
     private final TodoRepository todoRepository;
     private final CommentRepository commentRepository;
@@ -62,5 +66,17 @@ public class CommentService {
         comment.modify(requestDto);
 
         return ResponseEntity.status(HttpStatus.OK).body(CommentResponseDto.of(comment));
+    }
+
+    public Map<String, List<CommentResponseDto>> getCommentListByUser() {
+        Map<String, List<CommentResponseDto>> map = new TreeMap<>();
+        List<User> users = userRepository.findAll();
+
+        for (User user : users) {
+            List<Comment> comments = commentRepository.findAllByUser(user);
+            map.put(user.getUsername(), comments.stream().map(CommentResponseDto::of).toList());
+        }
+
+        return map;
     }
 }
