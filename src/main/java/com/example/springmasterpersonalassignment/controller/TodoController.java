@@ -27,8 +27,8 @@ public class TodoController {
     @ResponseBody
     @PostMapping()
     public ResponseEntity<?> createTodo(@RequestBody @Valid TodoRequestDto requestDto,
-                                                      BindingResult bindingResult,
-                                                      @AuthenticationPrincipal UserDetailsImpl userDetails) {
+                                        BindingResult bindingResult,
+                                        @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         List<FieldError> fieldErrors = bindingResult.getFieldErrors();
         if (fieldErrors.size() > 0) {
@@ -53,5 +53,10 @@ public class TodoController {
                                         BindingResult bindingResult,
                                         @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return todoService.modifyTodo(id, requestDto, userDetails.getUser());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteTodo(@PathVariable long id, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        return todoService.deleteTodo(id, userDetails.getUser());
     }
 }

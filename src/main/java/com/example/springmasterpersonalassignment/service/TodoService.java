@@ -53,4 +53,18 @@ public class TodoService {
         todo.modify(requestDto);
         return ResponseEntity.status(HttpStatus.OK).body(TodoResponseDto.of(todo));
     }
+
+    @Transactional
+    public ResponseEntity<?> deleteTodo(long id, User user) {
+        Todo todo = todoRepository.findById(id).orElseThrow(
+                () -> new IllegalArgumentException("존자하지 않는 id 입니다.")
+        );
+
+        if (!todo.getUser().getUsername().equals(user.getUsername())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("작성자만 수정 가능합니다.");
+        }
+
+        todoRepository.delete(todo);
+        return ResponseEntity.status(HttpStatus.OK).body("삭제 성공");
+    }
 }
