@@ -1,4 +1,4 @@
-package com.example.springmasterpersonalassignment.dto;
+package com.example.springmasterpersonalassignment.dto.response;
 
 import com.example.springmasterpersonalassignment.entity.Todo;
 import lombok.*;

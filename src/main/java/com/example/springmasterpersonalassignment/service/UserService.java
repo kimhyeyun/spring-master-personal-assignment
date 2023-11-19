@@ -1,9 +1,8 @@
 package com.example.springmasterpersonalassignment.service;
 
-import com.example.springmasterpersonalassignment.dto.SignupRequestDto;
-import com.example.springmasterpersonalassignment.dto.TodoResponseDto;
+import com.example.springmasterpersonalassignment.dto.request.SignupRequestDto;
+import com.example.springmasterpersonalassignment.dto.response.TodoResponseDto;
 import com.example.springmasterpersonalassignment.entity.User;
-import com.example.springmasterpersonalassignment.jwt.JwtUtil;
 import com.example.springmasterpersonalassignment.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

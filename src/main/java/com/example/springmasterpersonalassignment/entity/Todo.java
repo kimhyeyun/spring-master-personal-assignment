@@ -1,6 +1,6 @@
 package com.example.springmasterpersonalassignment.entity;
 
-import com.example.springmasterpersonalassignment.dto.TodoRequestDto;
+import com.example.springmasterpersonalassignment.dto.request.TodoRequestDto;
 import jakarta.persistence.*;
 import lombok.*;
 

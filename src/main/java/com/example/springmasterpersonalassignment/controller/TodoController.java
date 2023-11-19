@@ -1,7 +1,7 @@
 package com.example.springmasterpersonalassignment.controller;
 
-import com.example.springmasterpersonalassignment.dto.TodoRequestDto;
-import com.example.springmasterpersonalassignment.dto.TodoResponseDto;
+import com.example.springmasterpersonalassignment.dto.request.TodoRequestDto;
+import com.example.springmasterpersonalassignment.dto.response.TodoResponseDto;
 import com.example.springmasterpersonalassignment.security.UserDetailsImpl;
 import com.example.springmasterpersonalassignment.service.TodoService;
 import jakarta.validation.Valid;

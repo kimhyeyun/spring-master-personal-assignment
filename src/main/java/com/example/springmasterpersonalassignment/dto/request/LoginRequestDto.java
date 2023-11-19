@@ -1,4 +1,4 @@
-package com.example.springmasterpersonalassignment.dto;
+package com.example.springmasterpersonalassignment.dto.request;
 
 import lombok.Getter;
 import lombok.Setter;

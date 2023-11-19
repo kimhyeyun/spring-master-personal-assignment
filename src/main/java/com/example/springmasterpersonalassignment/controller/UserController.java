@@ -1,12 +1,10 @@
 package com.example.springmasterpersonalassignment.controller;
 
-import com.example.springmasterpersonalassignment.dto.SignupRequestDto;
-import com.example.springmasterpersonalassignment.dto.TodoResponseDto;
-import com.example.springmasterpersonalassignment.entity.User;
+import com.example.springmasterpersonalassignment.dto.request.SignupRequestDto;
+import com.example.springmasterpersonalassignment.dto.response.TodoResponseDto;
 import com.example.springmasterpersonalassignment.security.UserDetailsImpl;
 import com.example.springmasterpersonalassignment.service.UserService;
 import jakarta.validation.Valid;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
