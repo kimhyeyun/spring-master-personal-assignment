@@ -42,17 +42,4 @@ public class UserService {
         return ResponseEntity.status(HttpStatus.OK).body("회원 가입 성공");
     }
 
-
-    // 확인을 위한 메서드 //
-    public List<TodoResponseDto> findTodoList(String username) {
-        Optional<User> user = userRepository.findByUsername(username);
-
-        return user.get().getTodoList().stream().map(TodoResponseDto::of).toList();
-    }
-
-    public List<CommentResponseDto> findCommentList(String username) {
-        Optional<User> user = userRepository.findByUsername(username);
-
-        return user.get().getCommentList().stream().map(CommentResponseDto::of).toList();
-    }
 }

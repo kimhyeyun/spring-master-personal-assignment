@@ -41,17 +41,4 @@ public class UserController {
         return userService.signup(requestDto);
     }
 
-
-    // 확인을 위한 메서드 //
-    @GetMapping("/todos")
-    @ResponseBody
-    public List<TodoResponseDto> getUserTodos(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return userService.findTodoList(userDetails.getUser().getUsername());
-    }
-
-    @GetMapping("/comments")
-    @ResponseBody
-    public List<CommentResponseDto> getUserComments(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return userService.findCommentList(userDetails.getUser().getUsername());
-    }
 }
