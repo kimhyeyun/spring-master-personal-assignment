@@ -17,10 +17,8 @@ public class IntegrationTest {
 
     @Autowired
     protected MockMvc mvc;
-
     @Autowired
     protected ObjectMapper mapper;
-
     @Autowired
     protected PasswordEncoder passwordEncoder;
     @Autowired
