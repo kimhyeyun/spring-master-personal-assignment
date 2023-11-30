@@ -50,9 +50,21 @@ class UserServiceTest extends IntegrationTest {
     }
 
     @Test
-    @DisplayName("올바른 아이디, 비밀번호 입력 시, 회원 가입 성공")
+    @DisplayName("올바른 아이디, 비밀번호 입력 시, 회원 가입 성")
     void givenUsernameAndPassword_whenSignup_thenSuccess() {
+        // Given
+        String username = "tester";
+        String password = "123456789";
 
+        SignupRequestDto requestDto = new SignupRequestDto();
+        requestDto.setUsername(username);
+        requestDto.setPassword(password);
+
+        // When
+        ResponseEntity<?> result = userService.signup(requestDto);
+
+        // Then
+        assertEquals(result.getStatusCode(), HttpStatus.OK);
     }
 
     private User createUser(String username, String password) {
