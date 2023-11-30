@@ -65,6 +65,7 @@ class UserServiceTest{
 
         // Then
         assertEquals(result.getStatusCode(), HttpStatus.OK);
+        assertEquals(result.getBody().equals("회원 가입 성공"), true);
     }
 
 
