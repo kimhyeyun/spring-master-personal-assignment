@@ -38,7 +38,7 @@ class UserServiceTest extends IntegrationTest {
     }
 
     @Test
-    @DisplayName("올바른 아이디, 비밀번호 입력 시, 회원 가입 성")
+    @DisplayName("올바른 아이디, 비밀번호 입력 시, 회원 가입 성공")
     void givenUsernameAndPassword_whenSignup_thenSuccess() {
         // Given
         String username = "tester";
