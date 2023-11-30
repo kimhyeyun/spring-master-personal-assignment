@@ -1,23 +1,31 @@
 package com.example.springmasterpersonalassignment.service;
 
-import com.example.springmasterpersonalassignment.IntegrationTest;
 import com.example.springmasterpersonalassignment.dto.request.SignupRequestDto;
 import com.example.springmasterpersonalassignment.entity.User;
+import com.example.springmasterpersonalassignment.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
 
 
-@Transactional
-@DisplayName("[UserService]")
-class UserServiceTest extends IntegrationTest {
+@ExtendWith(MockitoExtension.class)
+@DisplayName("[UserService] 테스트")
+class UserServiceTest{
 
-    @Autowired UserService userService;
+    @InjectMocks UserService userService;
+    @Mock UserRepository userRepository;
+    @Mock PasswordEncoder passwordEncoder;
 
     @Test
     @DisplayName("중복된 아이디 입력 시, 회원 가입 실패")
@@ -30,11 +38,15 @@ class UserServiceTest extends IntegrationTest {
         requestDto.setUsername(username);
         requestDto.setPassword(password);
 
+        User user = createUser(username, password);
+
         // When
-        userService.signup(requestDto);
+        when(userRepository.findByUsername(requestDto.getUsername())).thenReturn(Optional.ofNullable(user));
+        ResponseEntity<?> answer = userService.signup(requestDto);
 
         // Then
-        assertEquals(userService.signup(requestDto).getStatusCode(), HttpStatus.BAD_REQUEST);
+        assertEquals(answer.getStatusCode(), HttpStatus.BAD_REQUEST);
+        assertEquals(answer.getBody().equals("중복된 username 입니다."), true);
     }
 
     @Test
@@ -55,4 +67,11 @@ class UserServiceTest extends IntegrationTest {
         assertEquals(result.getStatusCode(), HttpStatus.OK);
     }
 
+
+    private User createUser(String username, String password) {
+        return User.builder()
+                .username(username)
+                .password(password)
+                .build();
+    }
 }
