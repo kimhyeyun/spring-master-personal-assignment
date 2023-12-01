@@ -1,12 +1,12 @@
 package com.example.springmasterpersonalassignment.entity;
 
-import com.example.springmasterpersonalassignment.IntegrationTest;
 import com.example.springmasterpersonalassignment.dto.request.SignupRequestDto;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -15,9 +15,9 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
+@SpringBootTest
 @DisplayName("[Request Valid Test]")
-public class EntityValidateTest extends IntegrationTest {
+public class EntityValidateTest {
 
     @Autowired private Validator validator;
 
