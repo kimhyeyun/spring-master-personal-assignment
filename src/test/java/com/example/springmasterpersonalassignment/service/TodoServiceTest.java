@@ -153,6 +153,42 @@ class TodoServiceTest {
         assertEquals(result.getBody(), "삭제 성공");
     }
 
+    @Test
+    @DisplayName("작성하지 않은 사용자가 완료 처리 요청 시, 실패")
+    void givenOtherUser_whenTryFinished_thenFail() {
+        // Given
+        User user = createUser("hyeyun", "123456789");
+        Todo todo = createTodo(user);
+
+        User otherUser = createUser("noowner", "123456789");
+
+        // When
+        given(todoRepository.findById(any())).willReturn(Optional.ofNullable(todo));
+        ResponseEntity<?> result = sut.finishedTodo(1L, otherUser);
+
+        // Then
+        assertEquals(result.getStatusCode(), HttpStatus.BAD_REQUEST);
+        assertEquals(result.getBody(), "작성자만 수정 가능합니다.");
+        assertEquals(todo.isFinished(), false);
+    }
+
+    @Test
+    @DisplayName("작성자가 완료 처리 요청 시, 성공")
+    void givenCorrectUser_whenTryFinished_thenSuccess() {
+        // Given
+        User user = createUser("hyeyun", "123456789");
+        Todo todo = createTodo(user);
+
+        // When
+        given(todoRepository.findById(any())).willReturn(Optional.ofNullable(todo));
+        ResponseEntity<?> result = sut.finishedTodo(1L, user);
+
+        // Then
+        assertEquals(result.getStatusCode(), HttpStatus.OK);
+        assertEquals(result.getBody(), "완료 처리 성공");
+        assertEquals(todo.isFinished(), true);
+    }
+
     private Todo createTodo(User user) {
         return Todo.builder()
                 .title("TIL")
