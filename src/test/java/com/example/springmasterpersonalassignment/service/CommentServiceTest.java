@@ -2,6 +2,7 @@ package com.example.springmasterpersonalassignment.service;
 
 import com.example.springmasterpersonalassignment.dto.request.CommentRequestDto;
 import com.example.springmasterpersonalassignment.dto.response.CommentResponseDto;
+import com.example.springmasterpersonalassignment.entity.Todo;
 import com.example.springmasterpersonalassignment.entity.User;
 import com.example.springmasterpersonalassignment.repository.CommentRepository;
 import com.example.springmasterpersonalassignment.repository.TodoRepository;
@@ -14,6 +15,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
@@ -44,7 +47,33 @@ class CommentServiceTest {
                 .hasMessage("존재하지 않는 id 입니다.");
     }
 
+    @Test
+    @DisplayName("댓글 작성 성공")
+    void givenCommentRequest_whenSave_thenSuccess() {
+        // Given
+        User user = createUser("hyeyun", "123456789");
+        Todo todo = createTodo("TIL 작성", "12.01 9시 전 작성하자", user);
+        CommentRequestDto requestDto = new CommentRequestDto();
+        requestDto.setContent("퍼가요~^^");
 
+        given(todoRepository.findById(any())).willReturn(Optional.ofNullable(todo));
+
+        // When
+        ResponseEntity<CommentResponseDto> result = sut.createComment(1L, requestDto, user);
+        CommentResponseDto body = result.getBody();
+
+        // Then
+        assertEquals(result.getStatusCode(), HttpStatus.OK);
+        assertEquals(body.getContent(), requestDto.getContent());
+    }
+
+    private Todo createTodo(String title, String content, User user) {
+        return Todo.builder()
+                .title(title)
+                .content(content)
+                .user(user)
+                .build();
+    }
 
     private User createUser(String username, String password) {
         return User.builder()
