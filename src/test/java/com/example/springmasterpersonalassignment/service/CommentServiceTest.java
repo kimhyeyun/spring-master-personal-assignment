@@ -126,6 +126,42 @@ class CommentServiceTest {
         assertEquals(body.getContent(), requestDto.getContent());
     }
 
+    @Test
+    @DisplayName("작성자 아닌 사용자가 댓글 삭제 시, 실패")
+    void givenWrongUser_whenDelete_thenFail() {
+        // Given
+        User user = createUser("hyeyun", "123456789");
+        Todo todo = createTodo("TIL 작성", "12.01 9시 전 작성하자", user);
+        Comment comment = createComment("나도 쓴다 TIL", todo, user);
+
+        User other = createUser("whoareyou", "123456789");
+
+        // When
+        given(commentRepository.findById(any())).willReturn(Optional.ofNullable(comment));
+        ResponseEntity<?> result = sut.deleteComment(1L, other);
+
+        // Then
+        assertEquals(result.getStatusCode(), HttpStatus.BAD_REQUEST);
+        assertEquals(result.getBody(), "작성자만 삭제 가능합니다.");
+    }
+
+    @Test
+    @DisplayName("작성자가 댓글 삭제 시, 성공")
+    void givenCorrectUser_whenDelete_thenSuccess() {
+        // Given
+        User user = createUser("hyeyun", "123456789");
+        Todo todo = createTodo("TIL 작성", "12.01 9시 전 작성하자", user);
+        Comment comment = createComment("나도 쓴다 TIL", todo, user);
+
+        // When
+        given(commentRepository.findById(any())).willReturn(Optional.ofNullable(comment));
+        ResponseEntity<?> result = sut.deleteComment(1L, user);
+
+        // Then
+        assertEquals(result.getStatusCode(), HttpStatus.OK);
+        assertEquals(result.getBody(), "삭제 성공");
+    }
+
     private Comment createComment(String content, Todo todo, User user) {
         return Comment.builder()
                 .content(content)
