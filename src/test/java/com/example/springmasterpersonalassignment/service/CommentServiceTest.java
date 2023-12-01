@@ -2,6 +2,7 @@ package com.example.springmasterpersonalassignment.service;
 
 import com.example.springmasterpersonalassignment.dto.request.CommentRequestDto;
 import com.example.springmasterpersonalassignment.dto.response.CommentResponseDto;
+import com.example.springmasterpersonalassignment.entity.Comment;
 import com.example.springmasterpersonalassignment.entity.Todo;
 import com.example.springmasterpersonalassignment.entity.User;
 import com.example.springmasterpersonalassignment.repository.CommentRepository;
@@ -81,6 +82,56 @@ class CommentServiceTest {
         assertThatThrownBy(() -> sut.modifyComment(1L, requestDto, user))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("존재하지 않는 id 입니다.");
+    }
+
+    @Test
+    @DisplayName("작성자 아닌 사용자가 댓글 수정 시, 실패")
+    void givenWrongUser_whenModify_thenFail() {
+        // Given
+        User user = createUser("hyeyun", "123456789");
+        Todo todo = createTodo("TIL 작성", "12.01 9시 전 작성하자", user);
+        Comment comment = createComment("나도 쓴다 TIL", todo, user);
+        CommentRequestDto requestDto = new CommentRequestDto();
+        requestDto.setContent("퍼가요~^^");
+
+        User other = createUser("whoareyou", "123456789");
+
+        // When
+        given(commentRepository.findById(any())).willReturn(Optional.ofNullable(comment));
+        ResponseEntity<?> result = sut.modifyComment(1L, requestDto, other);
+
+        // Then
+        assertEquals(result.getStatusCode(), HttpStatus.BAD_REQUEST);
+        assertEquals(result.getBody(), "작성자만 수정 가능합니다.");
+        assertNotEquals(comment.getContent(), requestDto.getContent());
+    }
+
+    @Test
+    @DisplayName("작성자가 댓글 수정 시, 성공")
+    void givenCorrectUser_whenModify_thenSuccess() {
+        // Given
+        User user = createUser("hyeyun", "123456789");
+        Todo todo = createTodo("TIL 작성", "12.01 9시 전 작성하자", user);
+        Comment comment = createComment("나도 쓴다 TIL", todo, user);
+        CommentRequestDto requestDto = new CommentRequestDto();
+        requestDto.setContent("퍼가요~^^");
+
+        // When
+        given(commentRepository.findById(any())).willReturn(Optional.ofNullable(comment));
+        ResponseEntity<?> result = sut.modifyComment(1L, requestDto, user);
+        CommentResponseDto body = (CommentResponseDto) result.getBody();
+
+        // Then
+        assertEquals(result.getStatusCode(), HttpStatus.OK);
+        assertEquals(body.getContent(), requestDto.getContent());
+    }
+
+    private Comment createComment(String content, Todo todo, User user) {
+        return Comment.builder()
+                .content(content)
+                .todo(todo)
+                .user(user)
+                .build();
     }
 
     private Todo createTodo(String title, String content, User user) {
