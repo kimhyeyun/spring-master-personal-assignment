@@ -67,6 +67,22 @@ class CommentServiceTest {
         assertEquals(body.getContent(), requestDto.getContent());
     }
 
+    @Test
+    @DisplayName("존재하지 않는 댓글 수정 시, 실패")
+    void givenNonExistedCommentId_whenModify_thenFail() {
+        // Given
+        User user = createUser("hyeyun", "123456789");
+        Todo todo = createTodo("TIL 작성", "12.01 9시 전 작성하자", user);
+        CommentRequestDto requestDto = new CommentRequestDto();
+        requestDto.setContent("퍼가요~^^");
+
+        // When
+        // Then
+        assertThatThrownBy(() -> sut.modifyComment(1L, requestDto, user))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("존재하지 않는 id 입니다.");
+    }
+
     private Todo createTodo(String title, String content, User user) {
         return Todo.builder()
                 .title(title)
