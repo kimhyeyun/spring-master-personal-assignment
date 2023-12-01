@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ActiveProfiles("test")
+@DisplayName("[JPA Repository Test]")
 class JpaRepositoryTest {
 
     @Autowired private UserRepository userRepository;

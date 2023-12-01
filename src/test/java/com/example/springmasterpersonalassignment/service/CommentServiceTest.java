@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
+@DisplayName("[CommentService Test]")
 @ExtendWith(MockitoExtension.class)
 class CommentServiceTest {
 
