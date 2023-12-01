@@ -10,6 +10,9 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.List;
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -54,7 +57,7 @@ class JpaRepositoryTest {
     }
 
     @Test
-    @DisplayName("새로운 댓글 저장 성공")
+    @DisplayName("새로운 댓글 저장 성공  ")
     void create_new_comment_success() {
         // Given
         User user = generateUser();
@@ -71,6 +74,101 @@ class JpaRepositoryTest {
         assertEquals(savedComment.getUser().getUsername(), user.getUsername());
         assertEquals(savedComment.getTodo().getContent(), todo.getContent());
 
+    }
+
+    @Test
+    @DisplayName("저장된 여러 유저들 중, 유저 이름으로 유저 찾기 테스트")
+    void userFindByUsername() {
+        // Given
+        User user = generateUser();
+        userRepository.saveAndFlush(user);
+        for (int i = 0; i < 10; i++) {
+            createUser("username" + i, "testPassword" + i);
+        }
+        String findUsername = user.getUsername();
+
+        // When
+        Optional<User> findUser = userRepository.findByUsername(findUsername);
+
+        // Then
+        assertEquals(findUser.get().getUsername(), user.getUsername());
+        assertEquals(findUser.get().getPassword(), user.getPassword());
+    }
+
+    @Test
+    @DisplayName("특정 유저의 할 일 목록을 생성일자 내림차순으로 조회")
+    void todoFindAllByUserOrderByCreatedAtByDesc() {
+        // Given
+        for (int i = 0; i < 3; i++) {
+            User user = createUser("username" + i, "testPassword" + i);
+            for (int j = 0; j < 5; j++) {
+                createTodo("todo" + i + j, "content" + i + j, user);
+            }
+        }
+
+        Optional<User> findUser = userRepository.findByUsername("username2");
+
+        // When
+        List<Todo> result = todoRepository.findAllByUserOrderByCreatedAtDesc(findUser.get());
+
+        // Then
+        for (Todo todo : result) {
+            System.out.println(todo.getTitle());
+        }
+        assertThat(result).hasSize(5)
+                .map(Todo::getTitle)
+                .contains("todo20", "todo21", "todo22", "todo23", "todo24");
+    }
+
+    @Test
+    @DisplayName("특정 사용자의 댓글 목록 조회")
+    void commentFindAllByUser() {
+        // Given
+        for (int i = 0; i < 2; i++) {
+            User user = createUser("username" + i, "testPassword" + i);
+            for (int j = 0; j < 3; j++) {
+                Todo todo = createTodo("todo" + i + j, "content" + i + j, user);
+                for (int k = 0; k < 5; k++) {
+                    createComment("comment" + i + j + k, todo, user);
+                }
+            }
+        }
+
+        Optional<User> findUser = userRepository.findByUsername("username0");
+
+        // When
+        List<Comment> result = commentRepository.findAllByUser(findUser.get());
+
+        // Then
+        assertThat(result).hasSize(15)
+                .map(Comment::getContent)
+                .contains("comment000", "comment001", "comment002", "comment003", "comment004",
+                        "comment010", "comment011", "comment012", "comment013", "comment014",
+                        "comment020", "comment021", "comment022", "comment023", "comment024");
+
+    }
+
+    private void createComment(String content, Todo todo, User user) {
+        commentRepository.saveAndFlush(Comment.builder()
+                .content(content)
+                .todo(todo)
+                .user(user)
+                .build());
+    }
+
+    private Todo createTodo(String title, String content, User user) {
+        return todoRepository.saveAndFlush(Todo.builder()
+                .title(title)
+                .content(content)
+                .user(user)
+                .build());
+    }
+
+    private User createUser(String username, String password) {
+        return userRepository.saveAndFlush(User.builder()
+                .username(username)
+                .password(password)
+                .build());
     }
 
     private Comment generateComment(User user, Todo todo) {
