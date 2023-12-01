@@ -102,7 +102,7 @@ class TodoServiceTest {
     }
 
     @Test
-    @DisplayName("존재하지 않은 할 일 번호로 수정 시도 시, 실패")
+    @DisplayName("존재하지 않은 할 일 번호로 수정 시도 시, 실성")
     void givenNonExistedTodoId_whenModifyTodo_thenFail() {
         // Given
         User user = createUser("hyeyun", "123456789");
@@ -117,6 +117,40 @@ class TodoServiceTest {
         assertThatThrownBy(() -> sut.modifyTodo(1L, requestDto, user))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("존재하지 않는 id 입니다.");
+    }
+
+    @Test
+    @DisplayName("작성하지 않은 사용자가 삭제 요청 시, 실패")
+    void givenOtherUser_whenDelete_thenFail() {
+        // Given
+        User user = createUser("hyeyun", "123456789");
+        Todo todo = createTodo(user);
+
+        User otherUser = createUser("noowner", "123456789");
+
+        // When
+        given(todoRepository.findById(any())).willReturn(Optional.ofNullable(todo));
+        ResponseEntity<?> result = sut.deleteTodo(1L, otherUser);
+
+        // Then
+        assertEquals(result.getStatusCode(), HttpStatus.BAD_REQUEST);
+        assertEquals(result.getBody(), "작성자만 삭제 가능합니다.");
+    }
+
+    @Test
+    @DisplayName("사용자가 삭제 요청 시, 성공")
+    void givenCorrectUser_whenDelete_thenSuccess() {
+        // Given
+        User user = createUser("hyeyun", "123456789");
+        Todo todo = createTodo(user);
+
+        // When
+        given(todoRepository.findById(any())).willReturn(Optional.ofNullable(todo));
+        ResponseEntity<?> result = sut.deleteTodo(1L, user);
+
+        // Then
+        assertEquals(result.getStatusCode(), HttpStatus.OK);
+        assertEquals(result.getBody(), "삭제 성공");
     }
 
     private Todo createTodo(User user) {
