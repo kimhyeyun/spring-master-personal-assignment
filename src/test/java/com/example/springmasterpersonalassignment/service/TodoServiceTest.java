@@ -20,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
@@ -77,7 +78,7 @@ class TodoServiceTest {
     }
 
     @Test
-    @DisplayName("본인이 작성한 할 일 수정 시도 시, 성공")
+    @DisplayName("본인이 작성한 할 일 수정 시도 시, 성성")
     void givenCorrectUser_whenModifyTodo_thenSuccess() {
         // Given
         User user = createUser("hyeyun", "123456789");
@@ -98,6 +99,24 @@ class TodoServiceTest {
         assertEquals(body.getTitle(), requestDto.getTitle());
         assertEquals(body.getContent(), requestDto.getContent());
         assertEquals(body.getUsername(), user.getUsername());
+    }
+
+    @Test
+    @DisplayName("존재하지 않은 할 일 번호로 수정 시도 시, 실패")
+    void givenNonExistedTodoId_whenModifyTodo_thenFail() {
+        // Given
+        User user = createUser("hyeyun", "123456789");
+        TodoRequestDto requestDto = TodoRequestDto.builder()
+                .title("과제끝내")
+                .content("오늘까지")
+                .build();
+
+        // When
+
+        // Then
+        assertThatThrownBy(() -> sut.modifyTodo(1L, requestDto, user))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("존재하지 않는 id 입니다.");
     }
 
     private Todo createTodo(User user) {
