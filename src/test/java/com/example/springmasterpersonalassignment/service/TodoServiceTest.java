@@ -4,6 +4,7 @@ import com.example.springmasterpersonalassignment.dto.request.TodoRequestDto;
 import com.example.springmasterpersonalassignment.dto.response.TodoResponseDto;
 import com.example.springmasterpersonalassignment.entity.Todo;
 import com.example.springmasterpersonalassignment.entity.User;
+import com.example.springmasterpersonalassignment.exception.CustomException;
 import com.example.springmasterpersonalassignment.repository.TodoRepository;
 import com.example.springmasterpersonalassignment.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -46,12 +47,11 @@ class TodoServiceTest {
                 .build();
 
         // When
-        ResponseEntity<TodoResponseDto> result = sut.createTodo(requestDto, user);
+        TodoResponseDto result = sut.createTodo(requestDto, user);
 
         // Then
-        assertEquals(result.getStatusCode(), HttpStatus.OK);
-        assertEquals(result.getBody().getUsername(), user.getUsername());
-        assertEquals(result.getBody().getTitle(), requestDto.getTitle());
+        assertEquals(result.getUsername(), user.getUsername());
+        assertEquals(result.getTitle(), requestDto.getTitle());
     }
 
     @Test
@@ -69,16 +69,16 @@ class TodoServiceTest {
 
         // When
         given(todoRepository.findById(any())).willReturn(Optional.ofNullable(todo));
-        ResponseEntity<?> result = sut.modifyTodo(1L, requestDto, otherUser);
 
         // Then
-        assertEquals(result.getStatusCode(), HttpStatus.BAD_REQUEST);
-        assertEquals(result.getBody(), "작성자만 수정 가능합니다.");
+        assertThatThrownBy(() -> sut.modifyTodo(1L, requestDto, otherUser))
+                .isInstanceOf(CustomException.class)
+                .hasMessage("권한이 없습니다.");
         assertNotEquals(todo.getTitle(), requestDto.getTitle());
     }
 
     @Test
-    @DisplayName("본인이 작성한 할 일 수정 시도 시, 성성")
+    @DisplayName("본인이 작성한 할 일 수정 시도 시, 성공")
     void givenCorrectUser_whenModifyTodo_thenSuccess() {
         // Given
         User user = createUser("hyeyun", "123456789");
@@ -91,14 +91,12 @@ class TodoServiceTest {
 
         // When
         given(todoRepository.findById(any())).willReturn(Optional.ofNullable(todo));
-        ResponseEntity<?> result = sut.modifyTodo(1L, requestDto, user);
-        TodoResponseDto body = (TodoResponseDto) result.getBody();
+        TodoResponseDto result = sut.modifyTodo(1L, requestDto, user);
 
         // Then
-        assertEquals(result.getStatusCode(), HttpStatus.OK);
-        assertEquals(body.getTitle(), requestDto.getTitle());
-        assertEquals(body.getContent(), requestDto.getContent());
-        assertEquals(body.getUsername(), user.getUsername());
+        assertEquals(result.getTitle(), requestDto.getTitle());
+        assertEquals(result.getContent(), requestDto.getContent());
+        assertEquals(result.getUsername(), user.getUsername());
     }
 
     @Test
@@ -130,11 +128,11 @@ class TodoServiceTest {
 
         // When
         given(todoRepository.findById(any())).willReturn(Optional.ofNullable(todo));
-        ResponseEntity<?> result = sut.deleteTodo(1L, otherUser);
 
         // Then
-        assertEquals(result.getStatusCode(), HttpStatus.BAD_REQUEST);
-        assertEquals(result.getBody(), "작성자만 삭제 가능합니다.");
+        assertThatThrownBy(() -> sut.deleteTodo(1L, otherUser))
+                .isInstanceOf(CustomException.class)
+                .hasMessage("권한이 없습니다.");
     }
 
     @Test
@@ -146,11 +144,10 @@ class TodoServiceTest {
 
         // When
         given(todoRepository.findById(any())).willReturn(Optional.ofNullable(todo));
-        ResponseEntity<?> result = sut.deleteTodo(1L, user);
+        String result = sut.deleteTodo(1L, user);
 
         // Then
-        assertEquals(result.getStatusCode(), HttpStatus.OK);
-        assertEquals(result.getBody(), "삭제 성공");
+        assertEquals(result, "삭제 성공");
     }
 
     @Test

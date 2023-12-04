@@ -74,7 +74,7 @@ class UserControllerTest {
                 .build();
 
         UserDetailsImpl userDetails = new UserDetailsImpl(user);
-        principal = new UsernamePasswordAuthenticationToken(userDetails, "", null);
+        principal = new UsernamePasswordAuthenticationToken(userDetails, userDetails.getPassword(), userDetails.getAuthorities());
     }
 
     @Test
