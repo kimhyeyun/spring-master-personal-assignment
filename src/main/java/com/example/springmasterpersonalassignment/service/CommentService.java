@@ -5,6 +5,7 @@ import com.example.springmasterpersonalassignment.dto.response.CommentResponseDt
 import com.example.springmasterpersonalassignment.entity.Comment;
 import com.example.springmasterpersonalassignment.entity.Todo;
 import com.example.springmasterpersonalassignment.entity.User;
+import com.example.springmasterpersonalassignment.exception.CustomException;
 import com.example.springmasterpersonalassignment.repository.CommentRepository;
 import com.example.springmasterpersonalassignment.repository.TodoRepository;
 import com.example.springmasterpersonalassignment.repository.UserRepository;
@@ -30,7 +31,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
 
     @Transactional
-    public ResponseEntity<CommentResponseDto> createComment(Long todoId, CommentRequestDto requestDto, User user) {
+    public CommentResponseDto createComment(Long todoId, CommentRequestDto requestDto, User user) {
         Todo todo = todoRepository.findById(todoId).orElseThrow(
                 () -> new IllegalArgumentException("존재하지 않는 id 입니다.")
         );
@@ -41,7 +42,7 @@ public class CommentService {
 
         commentRepository.save(comment);
 
-        return ResponseEntity.status(HttpStatus.OK).body(CommentResponseDto.of(comment));
+        return CommentResponseDto.of(comment);
     }
 
     public List<CommentResponseDto> getCommentListByTodoId(Long todoId, User user) {
@@ -54,18 +55,18 @@ public class CommentService {
 
 
     @Transactional
-    public ResponseEntity<?> modifyComment(Long commentId, CommentRequestDto requestDto, User user) {
+    public CommentResponseDto modifyComment(Long commentId, CommentRequestDto requestDto, User user) {
         Comment comment = commentRepository.findById(commentId).orElseThrow(
                 () -> new IllegalArgumentException("존재하지 않는 id 입니다.")
         );
 
         if (!comment.getUser().getUsername().equals(user.getUsername())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("작성자만 수정 가능합니다.");
+            throw new CustomException("권한이 없습니다.");
         }
 
         comment.modify(requestDto);
 
-        return ResponseEntity.status(HttpStatus.OK).body(CommentResponseDto.of(comment));
+        return CommentResponseDto.of(comment);
     }
 
     public Map<String, List<CommentResponseDto>> getCommentListByUser() {
@@ -81,16 +82,16 @@ public class CommentService {
     }
 
     @Transactional
-    public ResponseEntity<?> deleteComment(Long commentId, User user) {
+    public String  deleteComment(Long commentId, User user) {
         Comment comment = commentRepository.findById(commentId).orElseThrow(
                 () -> new IllegalArgumentException("존자하지 않는 id 입니다.")
         );
 
         if (!comment.getUser().getUsername().equals(user.getUsername())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("작성자만 삭제 가능합니다.");
+            throw new CustomException("권한이 없습니다.");
         }
 
         commentRepository.delete(comment);
-        return ResponseEntity.status(HttpStatus.OK).body("삭제 성공");
+        return "삭제 성공";
     }
 }

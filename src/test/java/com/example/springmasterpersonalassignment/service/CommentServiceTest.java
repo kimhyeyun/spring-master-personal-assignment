@@ -5,6 +5,7 @@ import com.example.springmasterpersonalassignment.dto.response.CommentResponseDt
 import com.example.springmasterpersonalassignment.entity.Comment;
 import com.example.springmasterpersonalassignment.entity.Todo;
 import com.example.springmasterpersonalassignment.entity.User;
+import com.example.springmasterpersonalassignment.exception.CustomException;
 import com.example.springmasterpersonalassignment.repository.CommentRepository;
 import com.example.springmasterpersonalassignment.repository.TodoRepository;
 import com.example.springmasterpersonalassignment.repository.UserRepository;
@@ -61,12 +62,10 @@ class CommentServiceTest {
         given(todoRepository.findById(any())).willReturn(Optional.ofNullable(todo));
 
         // When
-        ResponseEntity<CommentResponseDto> result = sut.createComment(1L, requestDto, user);
-        CommentResponseDto body = result.getBody();
+        CommentResponseDto result = sut.createComment(1L, requestDto, user);
 
         // Then
-        assertEquals(result.getStatusCode(), HttpStatus.OK);
-        assertEquals(body.getContent(), requestDto.getContent());
+        assertEquals(result.getContent(), requestDto.getContent());
     }
 
     @Test
@@ -99,12 +98,9 @@ class CommentServiceTest {
 
         // When
         given(commentRepository.findById(any())).willReturn(Optional.ofNullable(comment));
-        ResponseEntity<?> result = sut.modifyComment(1L, requestDto, other);
 
         // Then
-        assertEquals(result.getStatusCode(), HttpStatus.BAD_REQUEST);
-        assertEquals(result.getBody(), "작성자만 수정 가능합니다.");
-        assertNotEquals(comment.getContent(), requestDto.getContent());
+        assertThrows(CustomException.class, () -> sut.modifyComment(1L, requestDto, other));
     }
 
     @Test
@@ -119,12 +115,10 @@ class CommentServiceTest {
 
         // When
         given(commentRepository.findById(any())).willReturn(Optional.ofNullable(comment));
-        ResponseEntity<?> result = sut.modifyComment(1L, requestDto, user);
-        CommentResponseDto body = (CommentResponseDto) result.getBody();
+        CommentResponseDto result = sut.modifyComment(1L, requestDto, user);
 
         // Then
-        assertEquals(result.getStatusCode(), HttpStatus.OK);
-        assertEquals(body.getContent(), requestDto.getContent());
+        assertEquals(result.getContent(), requestDto.getContent());
     }
 
     @Test
@@ -139,11 +133,9 @@ class CommentServiceTest {
 
         // When
         given(commentRepository.findById(any())).willReturn(Optional.ofNullable(comment));
-        ResponseEntity<?> result = sut.deleteComment(1L, other);
 
         // Then
-        assertEquals(result.getStatusCode(), HttpStatus.BAD_REQUEST);
-        assertEquals(result.getBody(), "작성자만 삭제 가능합니다.");
+        assertThrows(CustomException.class, () -> sut.deleteComment(1L, other));
     }
 
     @Test
@@ -156,11 +148,10 @@ class CommentServiceTest {
 
         // When
         given(commentRepository.findById(any())).willReturn(Optional.ofNullable(comment));
-        ResponseEntity<?> result = sut.deleteComment(1L, user);
+        String result = sut.deleteComment(1L, user);
 
         // Then
-        assertEquals(result.getStatusCode(), HttpStatus.OK);
-        assertEquals(result.getBody(), "삭제 성공");
+        assertEquals(result, "삭제 성공");
     }
 
     private Comment createComment(String content, Todo todo, User user) {
