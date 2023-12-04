@@ -81,16 +81,16 @@ public class TodoService {
 
 
     @Transactional
-    public ResponseEntity<?> finishedTodo(Long id, User user) {
+    public TodoResponseDto finishedTodo(Long id, User user) {
         Todo todo = todoRepository.findById(id).orElseThrow(
                 () -> new IllegalArgumentException("존자하지 않는 id 입니다.")
         );
 
         if (!todo.getUser().getUsername().equals(user.getUsername())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("작성자만 수정 가능합니다.");
+            throw new CustomException("권한이 없습니다.");
         }
 
         todo.setFinished(true);
-        return ResponseEntity.status(HttpStatus.OK).body("완료 처리 성공");
+        return TodoResponseDto.of(todo);
     }
 }

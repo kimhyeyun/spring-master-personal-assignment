@@ -64,6 +64,6 @@ public class TodoController {
 
     @PutMapping("/finish/{id}")
     public ResponseEntity<?> finishedTodo(@PathVariable Long id, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return todoService.finishedTodo(id, userDetails.getUser());
+        return ResponseEntity.status(HttpStatus.OK).body(todoService.finishedTodo(id, userDetails.getUser()));
     }
 }
