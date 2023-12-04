@@ -15,6 +15,7 @@ public class TodoResponseDto {
     private String title;
     private String content;
     private String username;
+    private boolean isFinished;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
 
@@ -23,8 +24,10 @@ public class TodoResponseDto {
                 .title(todo.getTitle())
                 .content(todo.getContent())
                 .username(todo.getUser().getUsername())
+                .isFinished(todo.isFinished())
                 .createdAt(todo.getCreatedAt())
                 .modifiedAt(todo.getModifiedAt())
                 .build();
     }
+
 }

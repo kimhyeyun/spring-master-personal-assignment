@@ -161,12 +161,9 @@ class TodoServiceTest {
 
         // When
         given(todoRepository.findById(any())).willReturn(Optional.ofNullable(todo));
-        ResponseEntity<?> result = sut.finishedTodo(1L, otherUser);
 
         // Then
-        assertEquals(result.getStatusCode(), HttpStatus.BAD_REQUEST);
-        assertEquals(result.getBody(), "작성자만 수정 가능합니다.");
-        assertEquals(todo.isFinished(), false);
+        assertThrows(CustomException.class, () -> sut.finishedTodo(1L, otherUser));
     }
 
     @Test
@@ -178,12 +175,12 @@ class TodoServiceTest {
 
         // When
         given(todoRepository.findById(any())).willReturn(Optional.ofNullable(todo));
-        ResponseEntity<?> result = sut.finishedTodo(1L, user);
+        TodoResponseDto result = sut.finishedTodo(1L, user);
 
         // Then
-        assertEquals(result.getStatusCode(), HttpStatus.OK);
-        assertEquals(result.getBody(), "완료 처리 성공");
-        assertEquals(todo.isFinished(), true);
+        assertEquals(result.getTitle(), todo.getTitle());
+        assertEquals(result.getContent(), todo.getContent());
+        assertEquals(result.isFinished(), true);
     }
 
     private Todo createTodo(User user) {

@@ -41,7 +41,7 @@ public class CommentController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("입력해주세요");
         }
 
-        return commentService.createComment(todoId, requestDto, userDetails.getUser());
+        return ResponseEntity.status(HttpStatus.CREATED).body(commentService.createComment(todoId, requestDto, userDetails.getUser()));
     }
 
     @GetMapping("/{todoId}")
@@ -51,7 +51,7 @@ public class CommentController {
 
     @PutMapping("/{commentId}")
     public ResponseEntity<?> modifyComment(@PathVariable Long commentId, @Valid @RequestBody CommentRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return commentService.modifyComment(commentId, requestDto, userDetails.getUser());
+        return ResponseEntity.status(HttpStatus.OK).body(commentService.modifyComment(commentId, requestDto, userDetails.getUser()));
     }
 
     @GetMapping()
@@ -61,6 +61,6 @@ public class CommentController {
 
     @DeleteMapping("/{commentId}")
     public ResponseEntity<?> deleteComment(@PathVariable Long commentId, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return commentService.deleteComment(commentId, userDetails.getUser());
+        return ResponseEntity.status(HttpStatus.OK).body(commentService.deleteComment(commentId, userDetails.getUser()));
     }
 }

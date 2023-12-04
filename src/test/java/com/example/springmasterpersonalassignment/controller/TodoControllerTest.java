@@ -7,20 +7,15 @@ import com.example.springmasterpersonalassignment.dto.response.TodoResponseDto;
 import com.example.springmasterpersonalassignment.entity.Todo;
 import com.example.springmasterpersonalassignment.entity.User;
 import com.example.springmasterpersonalassignment.exception.CustomException;
-import com.example.springmasterpersonalassignment.repository.TodoRepository;
 import com.example.springmasterpersonalassignment.repository.UserRepository;
 import com.example.springmasterpersonalassignment.security.UserDetailsImpl;
 import com.example.springmasterpersonalassignment.service.TodoService;
-import com.example.springmasterpersonalassignment.service.UserService;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
@@ -29,21 +24,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.security.Principal;
-import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -219,6 +208,48 @@ class TodoControllerTest {
                 )
                 .andExpect(status().isOk())
                 .andExpect(content().string("삭제 성공"))
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("할 일 완료 처리 실패 - 권한 없음")
+    void givenWrongUser_whenIsFinished_thenFail() throws Exception {
+        // Given
+        this.mockUserSetup();
+        given(todoService.finishedTodo(eq(1L), any(User.class))).willThrow(new CustomException("권한이 없습니다."));
+
+        // When & Then
+        mvc.perform(put("/api/todos/finish/1")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .principal(principal)
+                )
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("할 일 완료 처리 성공")
+    void givenTodoId_whenIsFinished_thenSuccess() throws Exception {
+        // Given
+        this.mockUserSetup();
+
+        TodoResponseDto responseDto = TodoResponseDto.builder()
+                .title("과제 완료")
+                .content("하자!")
+                .username(userDetails.getUsername())
+                .isFinished(true)
+                .build();
+
+        given(todoService.finishedTodo(eq(1L), any(User.class))).willReturn(responseDto);
+
+        // When & Then
+        mvc.perform(put("/api/todos/finish/1")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .principal(principal)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value(responseDto.getTitle()))
+                .andExpect(jsonPath("$.content").value(responseDto.getContent()))
+                .andExpect(jsonPath("$.finished").value(true))
                 .andDo(print());
     }
 
