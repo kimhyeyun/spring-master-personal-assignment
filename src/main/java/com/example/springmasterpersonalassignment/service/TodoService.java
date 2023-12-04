@@ -4,6 +4,7 @@ import com.example.springmasterpersonalassignment.dto.request.TodoRequestDto;
 import com.example.springmasterpersonalassignment.dto.response.TodoResponseDto;
 import com.example.springmasterpersonalassignment.entity.Todo;
 import com.example.springmasterpersonalassignment.entity.User;
+import com.example.springmasterpersonalassignment.exception.CustomException;
 import com.example.springmasterpersonalassignment.repository.TodoRepository;
 import com.example.springmasterpersonalassignment.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.naming.AuthenticationException;
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -27,13 +30,13 @@ public class TodoService {
     private final UserRepository userRepository;
 
     @Transactional
-    public ResponseEntity<TodoResponseDto> createTodo(TodoRequestDto requestDto, User user) {
+    public TodoResponseDto createTodo(TodoRequestDto requestDto, User user) {
         Todo todo = requestDto.toEntity();
         todo.setUser(user);
 
         todoRepository.save(todo);
 
-        return ResponseEntity.status(HttpStatus.OK).body(TodoResponseDto.of(todo));
+        return TodoResponseDto.of(todo);
     }
 
     public Map<String,List<TodoResponseDto>> getTodoList() {
@@ -49,31 +52,31 @@ public class TodoService {
     }
 
     @Transactional
-    public ResponseEntity<?> modifyTodo(long id, TodoRequestDto requestDto, User user) {
+    public TodoResponseDto modifyTodo(long id, TodoRequestDto requestDto, User user)  {
         Todo todo = todoRepository.findById(id).orElseThrow(
                 () -> new IllegalArgumentException("존재하지 않는 id 입니다.")
         );
 
         if (!todo.getUser().getUsername().equals(user.getUsername())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("작성자만 수정 가능합니다.");
+            throw new CustomException("권한이 없습니다.");
         }
 
         todo.modify(requestDto);
-        return ResponseEntity.status(HttpStatus.OK).body(TodoResponseDto.of(todo));
+        return TodoResponseDto.of(todo);
     }
 
     @Transactional
-    public ResponseEntity<?> deleteTodo(long id, User user) {
+    public String deleteTodo(long id, User user) {
         Todo todo = todoRepository.findById(id).orElseThrow(
                 () -> new IllegalArgumentException("존자하지 않는 id 입니다.")
         );
 
         if (!todo.getUser().getUsername().equals(user.getUsername())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("작성자만 삭제 가능합니다.");
+            throw new CustomException("권한이 없습니다.");
         }
 
         todoRepository.delete(todo);
-        return ResponseEntity.status(HttpStatus.OK).body("삭제 성공");
+        return "삭제 성공";
     }
 
 
