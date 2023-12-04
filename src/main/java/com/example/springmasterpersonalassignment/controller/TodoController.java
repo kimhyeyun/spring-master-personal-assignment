@@ -25,8 +25,9 @@ public class TodoController {
 
     private final TodoService todoService;
 
+
     @ResponseBody
-    @PostMapping()
+    @PostMapping
     public ResponseEntity<?> createTodo(@RequestBody @Valid TodoRequestDto requestDto,
                                         BindingResult bindingResult,
                                         @AuthenticationPrincipal UserDetailsImpl userDetails) {
@@ -39,7 +40,7 @@ public class TodoController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("모두 입력해주세요.");
         }
 
-        return todoService.createTodo(requestDto, userDetails.getUser());
+        return ResponseEntity.status(HttpStatus.CREATED).body(todoService.createTodo(requestDto, userDetails.getUser()));
     }
 
     @GetMapping()
@@ -53,12 +54,12 @@ public class TodoController {
                                         @RequestBody @Valid TodoRequestDto requestDto,
                                         BindingResult bindingResult,
                                         @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return todoService.modifyTodo(id, requestDto, userDetails.getUser());
+        return ResponseEntity.status(HttpStatus.OK).body(todoService.modifyTodo(id, requestDto, userDetails.getUser()));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteTodo(@PathVariable long id, @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return todoService.deleteTodo(id, userDetails.getUser());
+        return ResponseEntity.status(HttpStatus.OK).body(todoService.deleteTodo(id, userDetails.getUser()));
     }
 
     @PutMapping("/finish/{id}")
