@@ -1,5 +1,6 @@
 package com.example.springmasterpersonalassignment.service;
 
+import com.example.springmasterpersonalassignment.constant.ErrorCode;
 import com.example.springmasterpersonalassignment.dto.request.TodoRequestDto;
 import com.example.springmasterpersonalassignment.dto.response.TodoResponseDto;
 import com.example.springmasterpersonalassignment.entity.Todo;
@@ -31,8 +32,7 @@ public class TodoService {
 
     @Transactional
     public TodoResponseDto createTodo(TodoRequestDto requestDto, User user) {
-        Todo todo = requestDto.toEntity();
-        todo.setUser(user);
+        Todo todo = requestDto.toEntity(user);
 
         todoRepository.save(todo);
 
@@ -53,44 +53,43 @@ public class TodoService {
 
     @Transactional
     public TodoResponseDto modifyTodo(long id, TodoRequestDto requestDto, User user)  {
-        Todo todo = todoRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException("존재하지 않는 id 입니다.")
-        );
+        Todo todo = findTodo(id);
 
-        if (!todo.getUser().getUsername().equals(user.getUsername())) {
-            throw new CustomException("권한이 없습니다.");
-        }
+        checkUser(user, todo);
 
         todo.modify(requestDto);
         return TodoResponseDto.of(todo);
     }
 
     @Transactional
-    public String deleteTodo(long id, User user) {
-        Todo todo = todoRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException("존자하지 않는 id 입니다.")
-        );
+    public void deleteTodo(long id, User user) {
+        Todo todo = findTodo(id);
 
-        if (!todo.getUser().getUsername().equals(user.getUsername())) {
-            throw new CustomException("권한이 없습니다.");
-        }
+        checkUser(user, todo);
 
         todoRepository.delete(todo);
-        return "삭제 성공";
     }
 
 
     @Transactional
     public TodoResponseDto finishedTodo(Long id, User user) {
-        Todo todo = todoRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException("존자하지 않는 id 입니다.")
-        );
+        Todo todo = findTodo(id);
 
-        if (!todo.getUser().getUsername().equals(user.getUsername())) {
-            throw new CustomException("권한이 없습니다.");
-        }
+        checkUser(user, todo);
 
         todo.setFinished(true);
         return TodoResponseDto.of(todo);
+    }
+
+    private Todo findTodo(long id) {
+        return todoRepository.findById(id).orElseThrow(
+                () -> new CustomException(ErrorCode.NOT_FOUND_TODO)
+        );
+    }
+
+    private static void checkUser(User user, Todo todo) {
+        if (!todo.getUser().getUsername().equals(user.getUsername())) {
+            throw new CustomException(ErrorCode.ACCESS_DENIED);
+        }
     }
 }
