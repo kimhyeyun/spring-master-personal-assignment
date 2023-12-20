@@ -1,91 +1,59 @@
 package com.example.springmasterpersonalassignment.service;
 
-import com.example.springmasterpersonalassignment.constant.ErrorCode;
 import com.example.springmasterpersonalassignment.dto.request.TodoRequest;
 import com.example.springmasterpersonalassignment.dto.response.TodoResponse;
-import com.example.springmasterpersonalassignment.entity.Todo;
 import com.example.springmasterpersonalassignment.entity.User;
-import com.example.springmasterpersonalassignment.exception.CustomException;
-import com.example.springmasterpersonalassignment.repository.TodoRepository;
-import com.example.springmasterpersonalassignment.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
-@Slf4j(topic = "TodoService")
-@Service
-@RequiredArgsConstructor
-@Transactional(readOnly = true)
-public class TodoService {
+public interface TodoService {
 
-    private final TodoRepository todoRepository;
-    private final UserRepository userRepository;
-
-    @Transactional
-    public TodoResponse createTodo(TodoRequest requestDto, User user) {
-        Todo todo = requestDto.toEntity(user);
-
-        todoRepository.save(todo);
-
-        return TodoResponse.of(todo);
-    }
-
-    public Map<String,List<TodoResponse>> getTodoList() {
-        Map<String, List<TodoResponse>> map = new TreeMap<>();
-
-        List<User> users = userRepository.findAll();
-        for (User user : users) {
-            List<Todo> todos = todoRepository.findAllByUserOrderByCreatedAtDesc(user);
-            map.put(user.getUsername(), todos.stream().map(TodoResponse::of).toList());
-        }
-
-        return map;
-    }
-
-    @Transactional
-    public TodoResponse modifyTodo(long id, TodoRequest requestDto, User user)  {
-        Todo todo = findTodo(id);
-
-        checkUser(user, todo);
-
-        todo.modify(requestDto);
-        return TodoResponse.of(todo);
-    }
-
-    @Transactional
-    public void deleteTodo(long id, User user) {
-        Todo todo = findTodo(id);
-
-        checkUser(user, todo);
-
-        todoRepository.delete(todo);
-    }
+    /*
+    * 할 일 생성
+    *
+    * @param TodoRequest : 할 일 생성 요청 정보
+    * @param User : 생성 요청 유저 정보
+    * @return TodoResponse : 생성된 할 일 응답 정보
+    * */
+    TodoResponse createTodo(TodoRequest requestDto, User user);
 
 
-    @Transactional
-    public TodoResponse finishedTodo(Long id, User user) {
-        Todo todo = findTodo(id);
+    /*
+    * 유저 별 할 일 조회
+    *
+    * @return Map<String, List<TodoResponse>> : 유저 별 할 일 응답 정보 맵
+    * */
+    Map<String, List<TodoResponse>> getTodoList();
 
-        checkUser(user, todo);
+    /*
+    * 할 일 수정
+    *
+    * @param id : 수정할 할 일 id
+    * @param TodoRequest : 할 일 수정 요청 정보
+    * @param User : 수정 요청 유저 정보
+    *
+    * @return TodoResponse : 수정된 할 일 응답 정보
+    * */
+    TodoResponse modifyTodo(long id, TodoRequest requestDto, User user);
 
-        todo.setFinished(true);
-        return TodoResponse.of(todo);
-    }
+    /*
+    * 할 일 삭제
+    *
+    * @param id : 삭제할 할 일 id
+    * @param User : 삭제 요청한 유저 정보
+    * */
+    void deleteTodo(long id, User user);
 
-    private Todo findTodo(long id) {
-        return todoRepository.findById(id).orElseThrow(
-                () -> new CustomException(ErrorCode.NOT_FOUND_TODO)
-        );
-    }
+    /*
+    * 할 일 완료 처리
+    *
+    * @param id : 완료 처리할 할 일 id
+    * @param User : 완료 처리 요청한 유저 정보
+    *
+    * @return : 완료 처리된 할 일 응답 정보
+    * */
+    TodoResponse finishedTodo(Long id, User user);
 
-    private static void checkUser(User user, Todo todo) {
-        if (!todo.getUser().getUsername().equals(user.getUsername())) {
-            throw new CustomException(ErrorCode.ACCESS_DENIED);
-        }
-    }
+
 }
