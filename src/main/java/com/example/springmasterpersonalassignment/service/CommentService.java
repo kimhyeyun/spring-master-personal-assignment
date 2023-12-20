@@ -1,102 +1,59 @@
 package com.example.springmasterpersonalassignment.service;
 
-import com.example.springmasterpersonalassignment.constant.ErrorCode;
 import com.example.springmasterpersonalassignment.dto.request.CommentRequest;
 import com.example.springmasterpersonalassignment.dto.response.CommentResponse;
-import com.example.springmasterpersonalassignment.entity.Comment;
-import com.example.springmasterpersonalassignment.entity.Todo;
 import com.example.springmasterpersonalassignment.entity.User;
-import com.example.springmasterpersonalassignment.exception.CustomException;
-import com.example.springmasterpersonalassignment.repository.CommentRepository;
-import com.example.springmasterpersonalassignment.repository.TodoRepository;
-import com.example.springmasterpersonalassignment.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
-@Service
-@RequiredArgsConstructor
-@Transactional(readOnly = true)
-public class CommentService {
-    private final UserRepository userRepository;
+public interface CommentService {
 
-    private final TodoRepository todoRepository;
-    private final CommentRepository commentRepository;
+    /*
+    * 댓글 생성
+    *
+    * @param todoId : 댓글을 달 할 일 id
+    * @param CommentRequest : 댓글 생성 요청 정보
+    * @param User : 댓글 생성 유저 정보
+    *
+    * @return CommentResponse : 생성된 댓글 응답 정보
+    * */
+    CommentResponse createComment(Long todoId, CommentRequest requestDto, User user);
 
-    @Transactional
-    public CommentResponse createComment(Long todoId, CommentRequest requestDto, User user) {
-        Todo todo = findTodo(todoId);
-
-        Comment comment = requestDto.toEntity();
-        comment.setUser(user);
-        comment.setTodo(todo);
-
-        commentRepository.save(comment);
-
-        return CommentResponse.of(comment);
-    }
-
-    public List<CommentResponse> getCommentListByTodoId(Long todoId, User user) {
-        Todo todo = findTodo(todoId);
-
-        return todo.getComments().stream().map(CommentResponse::of).toList();
-    }
+    /*
+    * 할 일 별 댓글 리스트 조회
+    *
+    * @param todoId : 조회할 할 일 id
+    * @param User : 조회를 요청한 유저 정보
+    *
+    * @return List<CommentResponse> : 댓글 응답 정보 리스트
+    * */
+    List<CommentResponse> getCommentListByTodoId(Long todoId, User user);
 
 
-    @Transactional
-    public CommentResponse modifyComment(Long commentId, CommentRequest requestDto, User user) {
-        Comment comment = findComment(commentId);
+    /*
+    * 댓글 수정
+    *
+    * @param commentId : 수정할 댓글 id
+    * @param CommentRequest : 댓글 수정 요청 정보
+    * @param User : 댓글 수정 요청 유저 정보
+    *
+    * @return CommentResponse : 수정된 댓글 응답 정보
+    * */
+    CommentResponse modifyComment(Long commentId, CommentRequest requestDto, User user);
 
-        checkUser(user, comment);
+    /*
+    * 유저별 댓글 리스트 조회
+    *
+    * @return Map<String,List<CommentResponse>> : 유저별 댓글 응답 정보 리스트 맵
+    * */
+    Map<String, List<CommentResponse>> getCommentListByUser();
 
-        comment.modify(requestDto);
-
-        return CommentResponse.of(comment);
-    }
-
-    public Map<String, List<CommentResponse>> getCommentListByUser() {
-        Map<String, List<CommentResponse>> map = new TreeMap<>();
-        List<User> users = userRepository.findAll();
-
-        for (User user : users) {
-            List<Comment> comments = commentRepository.findAllByUser(user);
-            map.put(user.getUsername(), comments.stream().map(CommentResponse::of).toList());
-        }
-
-        return map;
-    }
-
-
-    @Transactional
-    public String  deleteComment(Long commentId, User user) {
-        Comment comment = findComment(commentId);
-
-        checkUser(user, comment);
-
-        commentRepository.delete(comment);
-        return "삭제 성공";
-    }
-
-    private Todo findTodo(Long todoId) {
-        return todoRepository.findById(todoId).orElseThrow(
-                () -> new CustomException(ErrorCode.NOT_FOUND_TODO)
-        );
-    }
-
-    private Comment findComment(Long commentId) {
-        return commentRepository.findById(commentId).orElseThrow(
-                () -> new CustomException(ErrorCode.NOT_FOUND_COMMENT)
-        );
-    }
-
-    private static void checkUser(User user, Comment comment) {
-        if (!comment.getUser().getUsername().equals(user.getUsername())) {
-            throw new CustomException(ErrorCode.ACCESS_DENIED);
-        }
-
-    }
+    /*
+    * 댓글 삭제
+    *
+    * @param commentId : 삭제할 댓글 id
+    * @param User : 삭제 요청한 유저 정보
+    * */
+    void deleteComment(Long commentId, User user);
 }
