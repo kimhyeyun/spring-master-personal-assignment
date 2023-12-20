@@ -1,8 +1,8 @@
 package com.example.springmasterpersonalassignment.service;
 
 import com.example.springmasterpersonalassignment.constant.ErrorCode;
-import com.example.springmasterpersonalassignment.dto.request.CommentRequestDto;
-import com.example.springmasterpersonalassignment.dto.response.CommentResponseDto;
+import com.example.springmasterpersonalassignment.dto.request.CommentRequest;
+import com.example.springmasterpersonalassignment.dto.response.CommentResponse;
 import com.example.springmasterpersonalassignment.entity.Comment;
 import com.example.springmasterpersonalassignment.entity.Todo;
 import com.example.springmasterpersonalassignment.entity.User;
@@ -28,7 +28,7 @@ public class CommentService {
     private final CommentRepository commentRepository;
 
     @Transactional
-    public CommentResponseDto createComment(Long todoId, CommentRequestDto requestDto, User user) {
+    public CommentResponse createComment(Long todoId, CommentRequest requestDto, User user) {
         Todo todo = findTodo(todoId);
 
         Comment comment = requestDto.toEntity();
@@ -37,34 +37,34 @@ public class CommentService {
 
         commentRepository.save(comment);
 
-        return CommentResponseDto.of(comment);
+        return CommentResponse.of(comment);
     }
 
-    public List<CommentResponseDto> getCommentListByTodoId(Long todoId, User user) {
+    public List<CommentResponse> getCommentListByTodoId(Long todoId, User user) {
         Todo todo = findTodo(todoId);
 
-        return todo.getComments().stream().map(CommentResponseDto::of).toList();
+        return todo.getComments().stream().map(CommentResponse::of).toList();
     }
 
 
     @Transactional
-    public CommentResponseDto modifyComment(Long commentId, CommentRequestDto requestDto, User user) {
+    public CommentResponse modifyComment(Long commentId, CommentRequest requestDto, User user) {
         Comment comment = findComment(commentId);
 
         checkUser(user, comment);
 
         comment.modify(requestDto);
 
-        return CommentResponseDto.of(comment);
+        return CommentResponse.of(comment);
     }
 
-    public Map<String, List<CommentResponseDto>> getCommentListByUser() {
-        Map<String, List<CommentResponseDto>> map = new TreeMap<>();
+    public Map<String, List<CommentResponse>> getCommentListByUser() {
+        Map<String, List<CommentResponse>> map = new TreeMap<>();
         List<User> users = userRepository.findAll();
 
         for (User user : users) {
             List<Comment> comments = commentRepository.findAllByUser(user);
-            map.put(user.getUsername(), comments.stream().map(CommentResponseDto::of).toList());
+            map.put(user.getUsername(), comments.stream().map(CommentResponse::of).toList());
         }
 
         return map;

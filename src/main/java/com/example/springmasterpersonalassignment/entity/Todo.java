@@ -1,6 +1,6 @@
 package com.example.springmasterpersonalassignment.entity;
 
-import com.example.springmasterpersonalassignment.dto.request.TodoRequestDto;
+import com.example.springmasterpersonalassignment.dto.request.TodoRequest;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -30,8 +30,8 @@ public class Todo extends BaseTimeEntity {
     @OneToMany(mappedBy = "todo", cascade = CascadeType.REMOVE)
     private List<Comment> comments = new ArrayList<>();
 
-    public void modify(TodoRequestDto requestDto) {
-        this.title = requestDto.getTitle();
-        this.content = requestDto.getContent();
+    public void modify(TodoRequest requestDto) {
+        this.title = requestDto.title();
+        this.content = requestDto.content();
     }
 }
