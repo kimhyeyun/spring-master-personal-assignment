@@ -3,17 +3,15 @@ package com.example.springmasterpersonalassignment.dto.request;
 import com.example.springmasterpersonalassignment.entity.Todo;
 import com.example.springmasterpersonalassignment.entity.User;
 import jakarta.validation.constraints.NotBlank;
-import lombok.*;
 
-@Getter
-@Setter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class TodoRequestDto {
+public record TodoRequest(
+        @NotBlank(message = "필수로 입력해주세요.")
+        String  title,
 
-    @NotBlank private String title;
-    @NotBlank private String content;
+        @NotBlank(message = "필수로 입력해주세요.")
+        String content
+
+) {
 
     public Todo toEntity(User user) {
         return Todo.builder()

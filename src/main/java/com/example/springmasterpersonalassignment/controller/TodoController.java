@@ -1,23 +1,15 @@
 package com.example.springmasterpersonalassignment.controller;
 
 import com.example.springmasterpersonalassignment.constant.SuccessCode;
-import com.example.springmasterpersonalassignment.dto.request.TodoRequestDto;
+import com.example.springmasterpersonalassignment.dto.request.TodoRequest;
 import com.example.springmasterpersonalassignment.dto.response.BaseResponse;
-import com.example.springmasterpersonalassignment.dto.response.TodoResponseDto;
 import com.example.springmasterpersonalassignment.security.UserDetailsImpl;
 import com.example.springmasterpersonalassignment.service.TodoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/todos")
@@ -28,7 +20,7 @@ public class TodoController {
 
 
     @PostMapping
-    public ResponseEntity<?> createTodo(@RequestBody @Valid TodoRequestDto requestDto,
+    public ResponseEntity<?> createTodo(@RequestBody @Valid TodoRequest requestDto,
                                         @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         return ResponseEntity.status(SuccessCode.CREATED_TODO.getHttpStatus()).body(
@@ -44,7 +36,7 @@ public class TodoController {
 
     @PutMapping("/{id}")
     public ResponseEntity<?> modifyTodo(@PathVariable long id,
-                                        @RequestBody @Valid TodoRequestDto requestDto,
+                                        @RequestBody @Valid TodoRequest requestDto,
                                         @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.status(SuccessCode.SUCCESS_UPDATE_TODO.getHttpStatus()).body(
                 BaseResponse.of(SuccessCode.SUCCESS_UPDATE_TODO, todoService.modifyTodo(id, requestDto, userDetails.getUser()))

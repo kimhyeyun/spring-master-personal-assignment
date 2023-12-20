@@ -1,7 +1,7 @@
 package com.example.springmasterpersonalassignment.service;
 
 import com.example.springmasterpersonalassignment.constant.ErrorCode;
-import com.example.springmasterpersonalassignment.dto.request.SignupRequestDto;
+import com.example.springmasterpersonalassignment.dto.request.SignupRequest;
 import com.example.springmasterpersonalassignment.dto.response.UserResponse;
 import com.example.springmasterpersonalassignment.entity.User;
 import com.example.springmasterpersonalassignment.exception.CustomException;
@@ -19,9 +19,9 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserResponse signup(SignupRequestDto requestDto) {
-        String username = requestDto.getUsername();
-        String password = passwordEncoder.encode(requestDto.getPassword());
+    public UserResponse signup(SignupRequest request) {
+        String username = request.username();
+        String password = passwordEncoder.encode(request.password());
 
         Optional<User> checkUsername = userRepository.findByUsername(username);
         if (checkUsername.isPresent()) {
@@ -32,7 +32,6 @@ public class UserService {
                 .username(username)
                 .password(password)
                 .build());
-
 
         return UserResponse.of(user);
     }

@@ -1,8 +1,8 @@
 package com.example.springmasterpersonalassignment.service;
 
 import com.example.springmasterpersonalassignment.constant.ErrorCode;
-import com.example.springmasterpersonalassignment.dto.request.TodoRequestDto;
-import com.example.springmasterpersonalassignment.dto.response.TodoResponseDto;
+import com.example.springmasterpersonalassignment.dto.request.TodoRequest;
+import com.example.springmasterpersonalassignment.dto.response.TodoResponse;
 import com.example.springmasterpersonalassignment.entity.Todo;
 import com.example.springmasterpersonalassignment.entity.User;
 import com.example.springmasterpersonalassignment.exception.CustomException;
@@ -10,13 +10,9 @@ import com.example.springmasterpersonalassignment.repository.TodoRepository;
 import com.example.springmasterpersonalassignment.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.naming.AuthenticationException;
-import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -31,34 +27,34 @@ public class TodoService {
     private final UserRepository userRepository;
 
     @Transactional
-    public TodoResponseDto createTodo(TodoRequestDto requestDto, User user) {
+    public TodoResponse createTodo(TodoRequest requestDto, User user) {
         Todo todo = requestDto.toEntity(user);
 
         todoRepository.save(todo);
 
-        return TodoResponseDto.of(todo);
+        return TodoResponse.of(todo);
     }
 
-    public Map<String,List<TodoResponseDto>> getTodoList() {
-        Map<String, List<TodoResponseDto>> map = new TreeMap<>();
+    public Map<String,List<TodoResponse>> getTodoList() {
+        Map<String, List<TodoResponse>> map = new TreeMap<>();
 
         List<User> users = userRepository.findAll();
         for (User user : users) {
             List<Todo> todos = todoRepository.findAllByUserOrderByCreatedAtDesc(user);
-            map.put(user.getUsername(), todos.stream().map(TodoResponseDto::of).toList());
+            map.put(user.getUsername(), todos.stream().map(TodoResponse::of).toList());
         }
 
         return map;
     }
 
     @Transactional
-    public TodoResponseDto modifyTodo(long id, TodoRequestDto requestDto, User user)  {
+    public TodoResponse modifyTodo(long id, TodoRequest requestDto, User user)  {
         Todo todo = findTodo(id);
 
         checkUser(user, todo);
 
         todo.modify(requestDto);
-        return TodoResponseDto.of(todo);
+        return TodoResponse.of(todo);
     }
 
     @Transactional
@@ -72,13 +68,13 @@ public class TodoService {
 
 
     @Transactional
-    public TodoResponseDto finishedTodo(Long id, User user) {
+    public TodoResponse finishedTodo(Long id, User user) {
         Todo todo = findTodo(id);
 
         checkUser(user, todo);
 
         todo.setFinished(true);
-        return TodoResponseDto.of(todo);
+        return TodoResponse.of(todo);
     }
 
     private Todo findTodo(long id) {

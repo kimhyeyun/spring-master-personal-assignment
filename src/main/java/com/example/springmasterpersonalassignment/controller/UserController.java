@@ -1,7 +1,7 @@
 package com.example.springmasterpersonalassignment.controller;
 
 import com.example.springmasterpersonalassignment.constant.SuccessCode;
-import com.example.springmasterpersonalassignment.dto.request.SignupRequestDto;
+import com.example.springmasterpersonalassignment.dto.request.SignupRequest;
 import com.example.springmasterpersonalassignment.dto.response.BaseResponse;
 import com.example.springmasterpersonalassignment.dto.response.UserResponse;
 import com.example.springmasterpersonalassignment.service.UserService;
@@ -21,7 +21,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/signup")
-    public ResponseEntity<?> signup(@RequestBody @Valid SignupRequestDto requestDto) {
+    public ResponseEntity<?> signup(@RequestBody @Valid SignupRequest requestDto) {
         UserResponse response = userService.signup(requestDto);
         return ResponseEntity.status(SuccessCode.CREATED_USER.getHttpStatus()).body(
                 BaseResponse.of(SuccessCode.CREATED_USER, response)

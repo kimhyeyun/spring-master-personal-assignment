@@ -1,20 +1,15 @@
 package com.example.springmasterpersonalassignment.controller;
 
 import com.example.springmasterpersonalassignment.constant.SuccessCode;
-import com.example.springmasterpersonalassignment.dto.request.CommentRequestDto;
+import com.example.springmasterpersonalassignment.dto.request.CommentRequest;
 import com.example.springmasterpersonalassignment.dto.response.BaseResponse;
-import com.example.springmasterpersonalassignment.dto.response.CommentResponseDto;
 import com.example.springmasterpersonalassignment.security.UserDetailsImpl;
 import com.example.springmasterpersonalassignment.service.CommentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/comments")
@@ -26,7 +21,7 @@ public class CommentController {
 
     @PostMapping("/{todoId}")
     public ResponseEntity<?> createComment(@PathVariable Long todoId,
-                                           @RequestBody @Valid CommentRequestDto requestDto,
+                                           @RequestBody @Valid CommentRequest requestDto,
                                            @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
         return ResponseEntity.status(SuccessCode.CREATED_COMMENT.getHttpStatus()).body(
@@ -42,7 +37,7 @@ public class CommentController {
     }
 
     @PutMapping("/{commentId}")
-    public ResponseEntity<?> modifyComment(@PathVariable Long commentId, @Valid @RequestBody CommentRequestDto requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
+    public ResponseEntity<?> modifyComment(@PathVariable Long commentId, @Valid @RequestBody CommentRequest requestDto, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         return ResponseEntity.status(SuccessCode.SUCCESS_UPDATE_COMMENT.getHttpStatus()).body(
                 BaseResponse.of(SuccessCode.SUCCESS_UPDATE_COMMENT, commentService.modifyComment(commentId, requestDto, userDetails.getUser()))
         );

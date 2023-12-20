@@ -1,6 +1,6 @@
 package com.example.springmasterpersonalassignment.jwt;
 
-import com.example.springmasterpersonalassignment.dto.request.LoginRequestDto;
+import com.example.springmasterpersonalassignment.dto.request.LoginRequest;
 import com.example.springmasterpersonalassignment.security.UserDetailsImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
@@ -57,12 +57,13 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         log.info("로그인 시도");
 
         try {
-            LoginRequestDto requestDto = new ObjectMapper().readValue(request.getInputStream(), LoginRequestDto.class);
+            LoginRequest requestDto = new ObjectMapper().readValue(request.getInputStream(), LoginRequest.class);
 
             return getAuthenticationManager().authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            requestDto.getUsername(),
-                            requestDto.getPassword()
+                            requestDto.username(),
+                            requestDto.password(),
+                            null
                     )
             );
         } catch (IOException e) {
