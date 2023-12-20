@@ -1,11 +1,19 @@
 package com.example.springmasterpersonalassignment.exception;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import com.example.springmasterpersonalassignment.constant.ErrorCode;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-@ResponseStatus(HttpStatus.BAD_REQUEST)
+@Getter
+@AllArgsConstructor
 public class CustomException extends RuntimeException {
-    public CustomException(String message) {
-        super(message);
+
+    private final ErrorCode errorCode;
+    private final String message;
+
+    public CustomException(ErrorCode errorCode) {
+        this.errorCode = errorCode;
+        this.message = errorCode.getMessage();
+
     }
 }
