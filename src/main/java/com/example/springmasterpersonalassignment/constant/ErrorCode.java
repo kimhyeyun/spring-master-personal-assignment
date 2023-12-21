@@ -11,6 +11,7 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 public enum ErrorCode {
 
     INVALID_VALUE(BAD_REQUEST, "값이 유효하지 않습니다."),
+    INVALID_PARAMETER(BAD_REQUEST, "파라미터가 누락되었습니다."),
     INVALID_TYPE(BAD_REQUEST, "없는 검색 타입 입니다."),
 
     NOT_FOUND_TODO(HttpStatus.NOT_FOUND, "없는 할 일 입니다."),
