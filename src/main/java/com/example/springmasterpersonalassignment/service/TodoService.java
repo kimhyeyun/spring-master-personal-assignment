@@ -56,4 +56,5 @@ public interface TodoService {
     TodoResponse finishedTodo(Long id, User user);
 
 
+    List<TodoResponse> searchTodo(String type, String keyword, User user);
 }

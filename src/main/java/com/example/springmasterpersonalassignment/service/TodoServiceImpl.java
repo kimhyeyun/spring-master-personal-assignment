@@ -9,7 +9,6 @@ import com.example.springmasterpersonalassignment.exception.CustomException;
 import com.example.springmasterpersonalassignment.repository.TodoRepository;
 import com.example.springmasterpersonalassignment.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -78,6 +77,15 @@ public class TodoServiceImpl implements TodoService{
 
         todo.setFinished(true);
         return TodoResponse.of(todo);
+    }
+
+    @Override
+    public List<TodoResponse> searchTodo(String type, String keyword, User user) {
+        List<Todo> todos = todoRepository.searchTodoBy(type, keyword, user);
+        if (todos.isEmpty()) {
+            throw new CustomException(ErrorCode.NOT_FOUND_TODO);
+        }
+        return todos.stream().map(TodoResponse::of).toList();
     }
 
     private Todo findTodo(long id) {
