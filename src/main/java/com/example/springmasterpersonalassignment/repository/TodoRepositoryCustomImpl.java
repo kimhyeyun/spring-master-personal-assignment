@@ -7,8 +7,13 @@ import com.example.springmasterpersonalassignment.exception.CustomException;
 import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Predicate;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
@@ -23,11 +28,16 @@ public class TodoRepositoryCustomImpl implements TodoRepositoryCustom {
     private final JPAQueryFactory jpaQueryFactory;
 
     @Override
-    public List<Todo> searchTodoBy(String type, String keyword, User user) {
-        return jpaQueryFactory.selectFrom(todo)
+    public Page<Todo> searchTodoBy(String type, String keyword, User user, Pageable pageable) {
+        List<Todo> todos = jpaQueryFactory.selectFrom(todo)
                 .where(searchKeyword(type, keyword))
                 .orderBy(new OrderSpecifier<>(Order.DESC, todo.createdAt))
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
                 .fetch();
+
+        return new PageImpl<>(todos, pageable, todos.size());
+
     }
 
     private Predicate searchKeyword(String type, String keyword) {

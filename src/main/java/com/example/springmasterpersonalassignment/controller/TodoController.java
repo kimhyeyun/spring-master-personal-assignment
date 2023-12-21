@@ -34,6 +34,7 @@ public class TodoController {
     @GetMapping("/list")
     public ResponseEntity<?> getTodoList() {
         return ResponseEntity.status(SuccessCode.SUCCESS_GET_TODO_LIST.getHttpStatus()).body(
+
                 BaseResponse.of(SuccessCode.SUCCESS_GET_TODO_LIST, todoService.getTodoList())
         );
     }
@@ -65,9 +66,10 @@ public class TodoController {
     @GetMapping
     public ResponseEntity<?> searchTodo(@RequestParam(name = "keyword", required = false) String keyword,
                                         @RequestParam(name = "type", required = false) String type,
+                                        @RequestParam Integer cursor, @RequestParam Integer size,
                                         @AuthenticationPrincipal UserDetailsImpl userDetails
     ) {
-        List<TodoResponse> response = todoService.searchTodo(type, keyword, userDetails.getUser());
+        List<TodoResponse> response = todoService.searchTodo(type, keyword, cursor, size, userDetails.getUser());
         return ResponseEntity.status(SuccessCode.SUCCESS_SEARCH_TODO.getHttpStatus()).body(
                 BaseResponse.of(SuccessCode.SUCCESS_SEARCH_TODO, response)
         );
