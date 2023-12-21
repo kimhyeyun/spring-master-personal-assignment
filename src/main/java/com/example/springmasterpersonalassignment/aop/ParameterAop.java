@@ -34,13 +34,13 @@ public class ParameterAop {
             log.info("type : " + arg.getClass().getSimpleName());
             log.info("value : " + arg);
         }
-        log.info("요청 시간: {}", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH시:mm분:ss초")));
+        log.info("요청 시간: {}", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH:mm:ss")));
     }
 
     @AfterReturning(value = "cut()", returning = "obj")
     public void afterReturning(JoinPoint joinPoint, Object obj) {
         log.info("return obj");
         log.info(obj.toString());
-        log.info("응답 시간: {}", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH시:mm분:ss초")));
+        log.info("응답 시간: {}", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH:mm:ss")));
     }
 }

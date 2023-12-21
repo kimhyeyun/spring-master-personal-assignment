@@ -16,6 +16,7 @@ public enum SuccessCode {
     SUCCESS_UPDATE_TODO(HttpStatus.OK, "할 일 수정에 성공했습니다"),
     SUCCESS_DELETE_TODO(HttpStatus.OK, "할 일 삭제에 성공했습니다"),
     SUCCESS_FINISHED_TODO(HttpStatus.OK, "할 일 완료 처리에 성공했습니다"),
+    SUCCESS_SEARCH_TODO(HttpStatus.OK, "할 일 검색에 성공했습니다"),
 
     SUCCESS_GET_COMMENT_LIST(HttpStatus.OK, "댓글 목록 조회에 성공했습니다"),
     SUCCESS_UPDATE_COMMENT(HttpStatus.OK, "댓글 수정에 성공했습니다"),
