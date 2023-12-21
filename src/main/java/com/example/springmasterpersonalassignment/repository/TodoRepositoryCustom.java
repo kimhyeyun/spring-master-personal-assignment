@@ -1,10 +1,10 @@
 package com.example.springmasterpersonalassignment.repository;
 
-import com.example.springmasterpersonalassignment.entity.Todo;
 import com.example.springmasterpersonalassignment.entity.User;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface TodoRepositoryCustom {
-    List<Todo> searchTodoBy(String type, String keyword, User user);
+    Page searchTodoBy(String type, String keyword, User user, Pageable pageable);
+
 }

@@ -9,6 +9,10 @@ import com.example.springmasterpersonalassignment.exception.CustomException;
 import com.example.springmasterpersonalassignment.repository.TodoRepository;
 import com.example.springmasterpersonalassignment.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -80,8 +84,11 @@ public class TodoServiceImpl implements TodoService{
     }
 
     @Override
-    public List<TodoResponse> searchTodo(String type, String keyword, User user) {
-        List<Todo> todos = todoRepository.searchTodoBy(type, keyword, user);
+    public List<TodoResponse> searchTodo(String type, String keyword, Integer cursor, Integer size, User user) {
+        Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
+        Pageable pageable = PageRequest.of(cursor, size, sort);
+        Page<Todo> todos = todoRepository.searchTodoBy(type, keyword, user, pageable);
+
         if (todos.isEmpty()) {
             throw new CustomException(ErrorCode.NOT_FOUND_TODO);
         }
