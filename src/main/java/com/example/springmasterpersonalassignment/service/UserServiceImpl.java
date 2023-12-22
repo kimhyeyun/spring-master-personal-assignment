@@ -22,17 +22,13 @@ public class UserServiceImpl implements UserService{
     @Override
     public UserResponse signup(SignupRequest request) {
         String username = request.username();
-        String password = passwordEncoder.encode(request.password());
 
         Optional<User> checkUsername = userRepository.findByUsername(username);
         if (checkUsername.isPresent()) {
             throw new CustomException(ErrorCode.ALREADY_EXISTED_USERNAME);
         }
 
-        User user = userRepository.save(User.builder()
-                .username(username)
-                .password(password)
-                .build());
+        User user = userRepository.save(request.toEntity(passwordEncoder));
 
         return UserResponse.of(user);
     }
