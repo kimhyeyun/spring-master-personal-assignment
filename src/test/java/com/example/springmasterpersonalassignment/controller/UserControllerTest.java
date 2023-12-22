@@ -2,12 +2,11 @@ package com.example.springmasterpersonalassignment.controller;
 
 import com.example.springmasterpersonalassignment.MockSpringSecurityFilter;
 import com.example.springmasterpersonalassignment.config.WebSecurityConfig;
-import com.example.springmasterpersonalassignment.dto.request.LoginRequestDto;
-import com.example.springmasterpersonalassignment.dto.request.SignupRequestDto;
+import com.example.springmasterpersonalassignment.dto.request.SignupRequest;
 import com.example.springmasterpersonalassignment.entity.User;
 import com.example.springmasterpersonalassignment.repository.UserRepository;
 import com.example.springmasterpersonalassignment.security.UserDetailsImpl;
-import com.example.springmasterpersonalassignment.service.UserService;
+import com.example.springmasterpersonalassignment.service.UserServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -22,15 +21,12 @@ import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.security.Principal;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.BDDMockito.given;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.formLogin;
-import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.unauthenticated;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -54,7 +50,7 @@ class UserControllerTest {
 
     @Autowired private ObjectMapper mapper;
     @Autowired private WebApplicationContext context;
-    @MockBean private UserService userService;
+    @MockBean private UserServiceImpl userService;
     @MockBean private UserRepository userRepository;
 
     @BeforeEach
@@ -81,17 +77,14 @@ class UserControllerTest {
     @DisplayName("회원 가입 요청 성공")
     void givenSignUpRequest_whenSignup_thenSuccess() throws Exception {
         // Given
-        SignupRequestDto signupRequestDto = new SignupRequestDto();
-        signupRequestDto.setUsername("kimhyeyun");
-        signupRequestDto.setPassword("Password123456");
+        SignupRequest signupRequestDto = new SignupRequest("kimhyeyun", "Password123456");
 
-        // When
-        // Then
+        // When &&Then
         mvc.perform(post("/api/users/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(signupRequestDto))
                 )
-                .andExpect(status().isOk())
+                .andExpect(status().isCreated())
                 .andDo(print());
     }
 
