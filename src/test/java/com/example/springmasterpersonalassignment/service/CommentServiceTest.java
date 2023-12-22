@@ -1,7 +1,8 @@
 package com.example.springmasterpersonalassignment.service;
 
-import com.example.springmasterpersonalassignment.dto.request.CommentRequestDto;
-import com.example.springmasterpersonalassignment.dto.response.CommentResponseDto;
+import com.example.springmasterpersonalassignment.constant.ErrorCode;
+import com.example.springmasterpersonalassignment.dto.request.CommentRequest;
+import com.example.springmasterpersonalassignment.dto.response.CommentResponse;
 import com.example.springmasterpersonalassignment.entity.Comment;
 import com.example.springmasterpersonalassignment.entity.Todo;
 import com.example.springmasterpersonalassignment.entity.User;
@@ -15,11 +16,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -29,7 +29,7 @@ import static org.mockito.BDDMockito.given;
 @ExtendWith(MockitoExtension.class)
 class CommentServiceTest {
 
-    @InjectMocks private CommentService sut;
+    @InjectMocks private CommentServiceImpl sut;
     @Mock private CommentRepository commentRepository;
     @Mock private TodoRepository todoRepository;
     @Mock private UserRepository userRepository;
@@ -39,15 +39,12 @@ class CommentServiceTest {
     void givenNonExistedTodo_whenSave_thenFail() {
         // Given
         User user = createUser("hyeyun", "123456789");
-        CommentRequestDto requestDto = new CommentRequestDto();
-        requestDto.setContent("퍼가요~^^");
+        CommentRequest requestDto = new CommentRequest("퍼가요~^^");
 
-
-        // When
-        // Then
+        // When && Then
         assertThatThrownBy(() -> sut.createComment(1L, requestDto, user))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("존재하지 않는 id 입니다.");
+                .isInstanceOf(CustomException.class)
+                .hasMessage(ErrorCode.NOT_FOUND_TODO.getMessage());
     }
 
     @Test
@@ -56,16 +53,15 @@ class CommentServiceTest {
         // Given
         User user = createUser("hyeyun", "123456789");
         Todo todo = createTodo("TIL 작성", "12.01 9시 전 작성하자", user);
-        CommentRequestDto requestDto = new CommentRequestDto();
-        requestDto.setContent("퍼가요~^^");
+        CommentRequest requestDto = new CommentRequest("퍼가요~^^");
 
         given(todoRepository.findById(any())).willReturn(Optional.ofNullable(todo));
 
         // When
-        CommentResponseDto result = sut.createComment(1L, requestDto, user);
+        CommentResponse result = sut.createComment(1L, requestDto, user);
 
         // Then
-        assertEquals(result.getContent(), requestDto.getContent());
+        assertEquals(result.content(), requestDto.content());
     }
 
     @Test
@@ -74,14 +70,12 @@ class CommentServiceTest {
         // Given
         User user = createUser("hyeyun", "123456789");
         Todo todo = createTodo("TIL 작성", "12.01 9시 전 작성하자", user);
-        CommentRequestDto requestDto = new CommentRequestDto();
-        requestDto.setContent("퍼가요~^^");
+        CommentRequest requestDto = new CommentRequest("퍼가요~^^");
 
-        // When
-        // Then
+        // When && Then
         assertThatThrownBy(() -> sut.modifyComment(1L, requestDto, user))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("존재하지 않는 id 입니다.");
+                .isInstanceOf(CustomException.class)
+                .hasMessage(ErrorCode.NOT_FOUND_COMMENT.getMessage());
     }
 
     @Test
@@ -91,8 +85,7 @@ class CommentServiceTest {
         User user = createUser("hyeyun", "123456789");
         Todo todo = createTodo("TIL 작성", "12.01 9시 전 작성하자", user);
         Comment comment = createComment("나도 쓴다 TIL", todo, user);
-        CommentRequestDto requestDto = new CommentRequestDto();
-        requestDto.setContent("퍼가요~^^");
+        CommentRequest requestDto = new CommentRequest("퍼가요~^^");
 
         User other = createUser("whoareyou", "123456789");
 
@@ -110,15 +103,14 @@ class CommentServiceTest {
         User user = createUser("hyeyun", "123456789");
         Todo todo = createTodo("TIL 작성", "12.01 9시 전 작성하자", user);
         Comment comment = createComment("나도 쓴다 TIL", todo, user);
-        CommentRequestDto requestDto = new CommentRequestDto();
-        requestDto.setContent("퍼가요~^^");
+        CommentRequest requestDto = new CommentRequest("퍼가요~^^");
 
         // When
         given(commentRepository.findById(any())).willReturn(Optional.ofNullable(comment));
-        CommentResponseDto result = sut.modifyComment(1L, requestDto, user);
+        CommentResponse result = sut.modifyComment(1L, requestDto, user);
 
         // Then
-        assertEquals(result.getContent(), requestDto.getContent());
+        assertEquals(result.content(), requestDto.content());
     }
 
     @Test
@@ -148,10 +140,11 @@ class CommentServiceTest {
 
         // When
         given(commentRepository.findById(any())).willReturn(Optional.ofNullable(comment));
-        String result = sut.deleteComment(1L, user);
 
         // Then
-        assertEquals(result, "삭제 성공");
+        assertThatCode(() -> sut.deleteComment(1L, user))
+                .doesNotThrowAnyException();
+
     }
 
     private Comment createComment(String content, Todo todo, User user) {
