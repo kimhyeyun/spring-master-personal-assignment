@@ -17,8 +17,10 @@ import java.util.List;
 @AllArgsConstructor
 public class User {
 
-    @Id private String username;
-    @Column(nullable = false) private String password;
+    @Id
+    private String username;
+    @Column(nullable = false)
+    private String password;
 
     @OneToMany(mappedBy = "user")
     @Builder.Default
@@ -27,4 +29,8 @@ public class User {
     @OneToMany(mappedBy = "user")
     @Builder.Default
     private List<Comment> commentList = new ArrayList<>();
+
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "user")
+    @Builder.Default
+    private List<UserImage> images = new ArrayList<>();
 }

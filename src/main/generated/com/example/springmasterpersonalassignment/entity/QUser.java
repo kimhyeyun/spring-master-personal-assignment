@@ -22,6 +22,8 @@ public class QUser extends EntityPathBase<User> {
 
     public final ListPath<Comment, QComment> commentList = this.<Comment, QComment>createList("commentList", Comment.class, QComment.class, PathInits.DIRECT2);
 
+    public final ListPath<UserImage, QUserImage> images = this.<UserImage, QUserImage>createList("images", UserImage.class, QUserImage.class, PathInits.DIRECT2);
+
     public final StringPath password = createString("password");
 
     public final ListPath<Todo, QTodo> todoList = this.<Todo, QTodo>createList("todoList", Todo.class, QTodo.class, PathInits.DIRECT2);
