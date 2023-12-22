@@ -2,16 +2,16 @@ package com.example.springmasterpersonalassignment.controller;
 
 import com.example.springmasterpersonalassignment.MockSpringSecurityFilter;
 import com.example.springmasterpersonalassignment.config.WebSecurityConfig;
-import com.example.springmasterpersonalassignment.dto.request.CommentRequestDto;
-import com.example.springmasterpersonalassignment.dto.response.CommentResponseDto;
+import com.example.springmasterpersonalassignment.constant.ErrorCode;
+import com.example.springmasterpersonalassignment.constant.SuccessCode;
+import com.example.springmasterpersonalassignment.dto.request.CommentRequest;
+import com.example.springmasterpersonalassignment.dto.response.CommentResponse;
 import com.example.springmasterpersonalassignment.entity.Comment;
 import com.example.springmasterpersonalassignment.entity.Todo;
 import com.example.springmasterpersonalassignment.entity.User;
 import com.example.springmasterpersonalassignment.exception.CustomException;
-import com.example.springmasterpersonalassignment.repository.UserRepository;
 import com.example.springmasterpersonalassignment.security.UserDetailsImpl;
-import com.example.springmasterpersonalassignment.service.CommentService;
-import com.example.springmasterpersonalassignment.service.TodoService;
+import com.example.springmasterpersonalassignment.service.CommentServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -22,19 +22,18 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.security.Principal;
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -60,7 +59,7 @@ class CommentControllerTest {
     @Autowired private ObjectMapper mapper;
     @Autowired private WebApplicationContext context;
 
-    @MockBean private CommentService commentService;
+    @MockBean private CommentServiceImpl commentService;
 
     @BeforeEach
     public void setup() {
@@ -85,12 +84,9 @@ class CommentControllerTest {
     void givenTodoIdAndCommentRequest_whenSave_thenSuccess() throws Exception {
         // Given
         Todo todo = createTodo(1L, "과제 완료", "9시 전까지", userDetails.getUser());
-        CommentRequestDto commentRequestDto = new CommentRequestDto();
-        commentRequestDto.setContent("화이팅");
+        CommentRequest commentRequestDto = new CommentRequest("화이팅");
 
-        CommentResponseDto responseDto = CommentResponseDto.builder()
-                .content(commentRequestDto.getContent())
-                .build();
+        CommentResponse responseDto = new CommentResponse(1L, commentRequestDto.content(), userDetails.getUsername(), LocalDateTime.now(), LocalDateTime.now());
 
         given(commentService.createComment(anyLong(), any(), any(User.class))).willReturn(responseDto);
 
@@ -102,7 +98,7 @@ class CommentControllerTest {
                         .principal(principal)
                 )
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.content").value(commentRequestDto.getContent()))
+                .andExpect(jsonPath("$.data.content").value(commentRequestDto.content()))
                 .andDo(print());
 
     }
@@ -115,10 +111,9 @@ class CommentControllerTest {
         User otherUser = createUser("whoareyou", "123456789");
         Comment comment = createComment("댓글 씀돠", todo, otherUser);
 
-        CommentRequestDto commentRequestDto = new CommentRequestDto();
-        commentRequestDto.setContent("화이팅");
+        CommentRequest commentRequestDto = new CommentRequest("화이팅");
 
-        given(commentService.modifyComment(anyLong(), any(), any())).willThrow(new CustomException("권한이 없습니다."));
+        given(commentService.modifyComment(anyLong(), any(), any())).willThrow(new CustomException(ErrorCode.ACCESS_DENIED));
 
         // When & Then
         mvc.perform(put("/api/comments/1")
@@ -127,8 +122,9 @@ class CommentControllerTest {
                         .accept(MediaType.APPLICATION_JSON)
                         .principal(principal)
                 )
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isForbidden())
                 .andExpect((result) -> assertTrue(result.getResolvedException().getClass().isAssignableFrom(CustomException.class)))
+                .andExpect(jsonPath("$.message").value(ErrorCode.ACCESS_DENIED.getMessage()))
                 .andDo(print());
     }
 
@@ -136,14 +132,14 @@ class CommentControllerTest {
     @DisplayName("댓글 삭제 성공")
     void givenCommentId_whenDelete_thenSuccess() throws Exception {
         // Given
-        given(commentService.deleteComment(anyLong(), any())).willReturn("삭제 성공");
+        willDoNothing().given(commentService).deleteComment(anyLong(), any());
 
         // When & Then
         mvc.perform(delete("/api/comments/1")
                         .principal(principal)
                 )
                 .andExpect(status().isOk())
-                .andExpect(content().string("삭제 성공"))
+                .andExpect(jsonPath("$.message").value(SuccessCode.SUCCESS_DELETE_COMMENT.getMessage()))
                 .andDo(print());
 
     }
@@ -152,13 +148,13 @@ class CommentControllerTest {
     @DisplayName("댓글 삭제 실패 - 권한 없음")
     void givenWrongUser_whenDelete_thenFail() throws Exception {
         // Given
-        given(commentService.deleteComment(anyLong(), any())).willThrow(new CustomException("권한이 없습니다."));
+        willThrow(new CustomException(ErrorCode.ACCESS_DENIED)).given(commentService).deleteComment(anyLong(), any());
 
         // When & Then
         mvc.perform(delete("/api/comments/1")
                         .principal(principal)
                 )
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isForbidden())
                 .andExpect((result) -> assertTrue(result.getResolvedException().getClass().isAssignableFrom(CustomException.class)))
                 .andDo(print());
 
