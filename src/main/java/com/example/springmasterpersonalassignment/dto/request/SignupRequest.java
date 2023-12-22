@@ -1,8 +1,10 @@
 package com.example.springmasterpersonalassignment.dto.request;
 
+import com.example.springmasterpersonalassignment.entity.User;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 public record SignupRequest(
         @NotBlank(message = "필수로 입력해주세요.")
@@ -15,5 +17,12 @@ public record SignupRequest(
         @Pattern(regexp = "^[a-zA-Z0-9]+$", message = "영어와 숫자로만 입력해주세요.")
         String password
 ) {
+
+        public User toEntity(PasswordEncoder passwordEncoder) {
+                return User.builder()
+                        .username(username)
+                        .password(passwordEncoder.encode(password))
+                        .build();
+        }
 
 }
