@@ -1,7 +1,10 @@
 package com.example.springmasterpersonalassignment.service;
 
-import com.example.springmasterpersonalassignment.dto.request.SignupRequestDto;
+import com.example.springmasterpersonalassignment.constant.ErrorCode;
+import com.example.springmasterpersonalassignment.dto.request.SignupRequest;
+import com.example.springmasterpersonalassignment.dto.response.UserResponse;
 import com.example.springmasterpersonalassignment.entity.User;
+import com.example.springmasterpersonalassignment.exception.CustomException;
 import com.example.springmasterpersonalassignment.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,21 +12,23 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.when;
 
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("[UserService] 테스트")
-class UserServiceTest{
+class UserServiceImplTest {
 
-    @InjectMocks UserService userService;
+    @InjectMocks UserServiceImpl sut;
     @Mock UserRepository userRepository;
     @Mock PasswordEncoder passwordEncoder;
 
@@ -34,38 +39,34 @@ class UserServiceTest{
         String username = "tester";
         String password = "123456789";
 
-        SignupRequestDto requestDto = new SignupRequestDto();
-        requestDto.setUsername(username);
-        requestDto.setPassword(password);
-
+        SignupRequest requestDto = new SignupRequest(username, password);
         User user = createUser(username, password);
 
         // When
-        when(userRepository.findByUsername(requestDto.getUsername())).thenReturn(Optional.ofNullable(user));
-        ResponseEntity<?> answer = userService.signup(requestDto);
+        when(userRepository.findByUsername(requestDto.username())).thenReturn(Optional.ofNullable(user));
 
         // Then
-        assertEquals(answer.getStatusCode(), HttpStatus.BAD_REQUEST);
-        assertEquals(answer.getBody().equals("중복된 username 입니다."), true);
+        assertThatThrownBy(() -> sut.signup(requestDto))
+                .isInstanceOf(CustomException.class)
+                .hasMessage(ErrorCode.ALREADY_EXISTED_USERNAME.getMessage());
+
     }
 
     @Test
     @DisplayName("올바른 아이디, 비밀번호 입력 시, 회원 가입 성공")
     void givenUsernameAndPassword_whenSignup_thenSuccess() {
         // Given
-        String username = "tester";
-        String password = "123456789";
-
-        SignupRequestDto requestDto = new SignupRequestDto();
-        requestDto.setUsername(username);
-        requestDto.setPassword(password);
+        SignupRequest requestDto = new SignupRequest("tester", "123456789");
+        User user = requestDto.toEntity(passwordEncoder);
 
         // When
-        ResponseEntity<?> result = userService.signup(requestDto);
+        when(userRepository.save(any(User.class))).thenReturn(user);
+        UserResponse response = sut.signup(requestDto);
 
         // Then
-        assertEquals(result.getStatusCode(), HttpStatus.OK);
-        assertEquals(result.getBody().equals("회원 가입 성공"), true);
+        then(userRepository).should().save(any(User.class));
+        assertEquals(response.username(), requestDto.username());
+
     }
 
 
