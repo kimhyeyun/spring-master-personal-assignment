@@ -1,7 +1,8 @@
 package com.example.springmasterpersonalassignment.service;
 
-import com.example.springmasterpersonalassignment.dto.request.TodoRequestDto;
-import com.example.springmasterpersonalassignment.dto.response.TodoResponseDto;
+import com.example.springmasterpersonalassignment.constant.ErrorCode;
+import com.example.springmasterpersonalassignment.dto.request.TodoRequest;
+import com.example.springmasterpersonalassignment.dto.response.TodoResponse;
 import com.example.springmasterpersonalassignment.entity.Todo;
 import com.example.springmasterpersonalassignment.entity.User;
 import com.example.springmasterpersonalassignment.exception.CustomException;
@@ -15,24 +16,24 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
+import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 @DisplayName("[TodoService 테스트]")
 class TodoServiceTest {
 
-    @InjectMocks private TodoService sut;
+    @InjectMocks private TodoServiceImpl sut;
     @Mock private TodoRepository todoRepository;
     @Mock private UserRepository userRepository;
 
@@ -41,17 +42,14 @@ class TodoServiceTest {
     void givenNewTodo_whenSaveTodo_thenSuccess() {
         // Given
         User user = createUser("hyeyun", "123456789");
-        TodoRequestDto requestDto = TodoRequestDto.builder()
-                .title("test title")
-                .content("test content")
-                .build();
+        TodoRequest requestDto = new TodoRequest("test title", "test content");
 
         // When
-        TodoResponseDto result = sut.createTodo(requestDto, user);
+        TodoResponse result = sut.createTodo(requestDto, user);
 
         // Then
-        assertEquals(result.getUsername(), user.getUsername());
-        assertEquals(result.getTitle(), requestDto.getTitle());
+        assertEquals(result.username(), user.getUsername());
+        assertEquals(result.title(), requestDto.title());
     }
 
     @Test
@@ -62,10 +60,7 @@ class TodoServiceTest {
         Todo todo = createTodo(user);
 
         User otherUser = createUser("noowner", "123456789");
-        TodoRequestDto requestDto = TodoRequestDto.builder()
-                .title("과제끝내")
-                .content("오늘까지")
-                .build();
+        TodoRequest requestDto = new TodoRequest("과제끝내", "오늘까지");
 
         // When
         given(todoRepository.findById(any())).willReturn(Optional.ofNullable(todo));
@@ -73,8 +68,8 @@ class TodoServiceTest {
         // Then
         assertThatThrownBy(() -> sut.modifyTodo(1L, requestDto, otherUser))
                 .isInstanceOf(CustomException.class)
-                .hasMessage("권한이 없습니다.");
-        assertNotEquals(todo.getTitle(), requestDto.getTitle());
+                .hasMessage(ErrorCode.ACCESS_DENIED.getMessage());
+        assertNotEquals(todo.getTitle(), requestDto.title());
     }
 
     @Test
@@ -84,19 +79,16 @@ class TodoServiceTest {
         User user = createUser("hyeyun", "123456789");
         Todo todo = createTodo(user);
 
-        TodoRequestDto requestDto = TodoRequestDto.builder()
-                .title("과제끝내")
-                .content("오늘까지")
-                .build();
+        TodoRequest requestDto = new TodoRequest("과제 끝내", "오늘까지");
 
         // When
         given(todoRepository.findById(any())).willReturn(Optional.ofNullable(todo));
-        TodoResponseDto result = sut.modifyTodo(1L, requestDto, user);
+        TodoResponse result = sut.modifyTodo(1L, requestDto, user);
 
         // Then
-        assertEquals(result.getTitle(), requestDto.getTitle());
-        assertEquals(result.getContent(), requestDto.getContent());
-        assertEquals(result.getUsername(), user.getUsername());
+        assertEquals(result.title(), requestDto.title());
+        assertEquals(result.content(), requestDto.content());
+        assertEquals(result.username(), user.getUsername());
     }
 
     @Test
@@ -104,17 +96,12 @@ class TodoServiceTest {
     void givenNonExistedTodoId_whenModifyTodo_thenFail() {
         // Given
         User user = createUser("hyeyun", "123456789");
-        TodoRequestDto requestDto = TodoRequestDto.builder()
-                .title("과제끝내")
-                .content("오늘까지")
-                .build();
+        TodoRequest requestDto = new TodoRequest("과제 끝내", "오늘까지");
 
-        // When
-
-        // Then
+        // When && Then
         assertThatThrownBy(() -> sut.modifyTodo(1L, requestDto, user))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("존재하지 않는 id 입니다.");
+                .isInstanceOf(CustomException.class)
+                .hasMessage(ErrorCode.NOT_FOUND_TODO.getMessage());
     }
 
     @Test
@@ -132,7 +119,7 @@ class TodoServiceTest {
         // Then
         assertThatThrownBy(() -> sut.deleteTodo(1L, otherUser))
                 .isInstanceOf(CustomException.class)
-                .hasMessage("권한이 없습니다.");
+                .hasMessage(ErrorCode.ACCESS_DENIED.getMessage());
     }
 
     @Test
@@ -144,10 +131,10 @@ class TodoServiceTest {
 
         // When
         given(todoRepository.findById(any())).willReturn(Optional.ofNullable(todo));
-        String result = sut.deleteTodo(1L, user);
 
         // Then
-        assertEquals(result, "삭제 성공");
+        assertThatCode(() -> sut.deleteTodo(1L, user))
+                .doesNotThrowAnyException();
     }
 
     @Test
@@ -175,11 +162,11 @@ class TodoServiceTest {
 
         // When
         given(todoRepository.findById(any())).willReturn(Optional.ofNullable(todo));
-        TodoResponseDto result = sut.finishedTodo(1L, user);
+        TodoResponse result = sut.finishedTodo(1L, user);
 
         // Then
-        assertEquals(result.getTitle(), todo.getTitle());
-        assertEquals(result.getContent(), todo.getContent());
+        assertEquals(result.title(), todo.getTitle());
+        assertEquals(result.content(), todo.getContent());
         assertEquals(result.isFinished(), true);
     }
 

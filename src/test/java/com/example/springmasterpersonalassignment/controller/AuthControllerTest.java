@@ -1,10 +1,8 @@
 package com.example.springmasterpersonalassignment.controller;
 
-import com.example.springmasterpersonalassignment.dto.request.LoginRequestDto;
-import com.example.springmasterpersonalassignment.dto.request.SignupRequestDto;
+import com.example.springmasterpersonalassignment.dto.request.LoginRequest;
 import com.example.springmasterpersonalassignment.entity.User;
 import com.example.springmasterpersonalassignment.repository.UserRepository;
-import com.example.springmasterpersonalassignment.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
@@ -13,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -45,12 +42,9 @@ public class AuthControllerTest {
     @DisplayName("로그인 실패 - 없는 사용자")
     void givenNonExistedUser_whenLogin_thenFail() throws Exception {
         // Given
-        LoginRequestDto requestDto = new LoginRequestDto();
-        requestDto.setUsername("whoareyou");
-        requestDto.setPassword("123456789");
+        LoginRequest requestDto = new LoginRequest("whoareyou", "123456789");
 
-        // When
-        // Then
+        // When && Then
         MvcResult result = mvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(requestDto))
@@ -70,12 +64,9 @@ public class AuthControllerTest {
         // Given
         createUser("hyeyun", "123456789");
 
-        LoginRequestDto requestDto = new LoginRequestDto();
-        requestDto.setUsername("hyeyun");
-        requestDto.setPassword("456789123");
+        LoginRequest requestDto = new LoginRequest("hyeyun", "456789123");
 
-        // When
-        // Then
+        // When && Then
         MvcResult result = mvc.perform(post("/api/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(requestDto))
@@ -94,11 +85,9 @@ public class AuthControllerTest {
     void givenLoginRequest_whenLogin_thenSuccess() throws Exception {
         // Given
 
-        LoginRequestDto requestDto = new LoginRequestDto();
-        requestDto.setUsername("hyeyun");
-        requestDto.setPassword("123456789");
+        LoginRequest requestDto = new LoginRequest("hyeyun", "123456789");
 
-        createUser(requestDto.getUsername(), requestDto.getPassword());
+        createUser(requestDto.username(), requestDto.password());
 
         // When
         // Then

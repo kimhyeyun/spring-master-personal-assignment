@@ -18,10 +18,10 @@ public record SignupRequest(
         String password
 ) {
 
-    public User toEntity(PasswordEncoder passwordEncoder) {
-        return User.builder()
-                .username(username)
-                .password(passwordEncoder.encode(password))
-                .build();
-    }
+        public User toEntity(PasswordEncoder passwordEncoder) {
+                return User.builder()
+                        .username(username)
+                        .password(passwordEncoder.encode(password))
+                        .build();
+        }
 }
