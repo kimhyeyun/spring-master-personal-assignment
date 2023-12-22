@@ -1,25 +1,42 @@
 package com.example.springmasterpersonalassignment.repository;
 
+import com.example.springmasterpersonalassignment.config.JQueryConfig;
+import com.example.springmasterpersonalassignment.config.PasswordConfig;
+import com.example.springmasterpersonalassignment.constant.ErrorCode;
+import com.example.springmasterpersonalassignment.dto.response.TodoResponse;
 import com.example.springmasterpersonalassignment.entity.Comment;
 import com.example.springmasterpersonalassignment.entity.Todo;
 import com.example.springmasterpersonalassignment.entity.User;
+import com.example.springmasterpersonalassignment.exception.CustomException;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ActiveProfiles("test")
-@DisplayName("[JPA Repository Test]")
+@DisplayName("JPA Repository Test")
+@Import({
+        PasswordConfig.class,
+        JQueryConfig.class
+})
 class JpaRepositoryTest {
 
     @Autowired private UserRepository userRepository;
@@ -74,7 +91,6 @@ class JpaRepositoryTest {
         assertEquals(savedComment.getContent(), comment.getContent());
         assertEquals(savedComment.getUser().getUsername(), user.getUsername());
         assertEquals(savedComment.getTodo().getContent(), todo.getContent());
-
     }
 
     @Test
@@ -100,12 +116,7 @@ class JpaRepositoryTest {
     @DisplayName("특정 유저의 할 일 목록을 생성일자 내림차순으로 조회")
     void todoFindAllByUserOrderByCreatedAtByDesc() {
         // Given
-        for (int i = 0; i < 3; i++) {
-            User user = createUser("username" + i, "testPassword" + i);
-            for (int j = 0; j < 5; j++) {
-                createTodo("todo" + i + j, "content" + i + j, user);
-            }
-        }
+        generateTodos();
 
         Optional<User> findUser = userRepository.findByUsername("username2");
 
@@ -148,6 +159,63 @@ class JpaRepositoryTest {
                         "comment020", "comment021", "comment022", "comment023", "comment024");
 
     }
+
+    @Test
+    @DisplayName("제목 검색 테스트, 성공")
+    void givenSearchRequestOfTitle_whenSearch_thenSuccess() {
+        // Given
+        User user = createUser("username", "123456789");
+        Pageable pageable = PageRequest.of(0, 3);
+        generateTodos();
+
+        // When
+        Page<Todo> todos = todoRepository.searchTodoBy("title", "todo1", user, pageable);
+
+        // Then
+        assertThat(todos).hasSize(3)
+                .anyMatch((todo) -> todo.getTitle().contains("todo1"));
+    }
+
+    @Test
+    @DisplayName("내용 검색 테스트, 성공")
+    void givenSearchRequestOfContent_whenSearch_thenSuccess() {
+        // Given
+        User user = createUser("username", "123456789");
+        Pageable pageable = PageRequest.of(0, 3);
+        generateTodos();
+
+        // When
+        Page<Todo> todos = todoRepository.searchTodoBy("content", "content2", user, pageable);
+
+        // Then
+        assertThat(todos).hasSize(3)
+                .anyMatch((todo) -> todo.getContent().contains("content2"));
+    }
+
+    @Test
+    @DisplayName("검색 테스트, 실패")
+    void givenWrongSearchType_whenSearch_thenFail() {
+        // Given
+        User user = createUser("username", "123456789");
+        Pageable pageable = PageRequest.of(0, 3);
+        generateTodos();
+
+        // When && then
+        assertThatThrownBy(() -> todoRepository.searchTodoBy("con", "todo1", user, pageable))
+                .isInstanceOf(CustomException.class)
+                .hasMessage(ErrorCode.INVALID_TYPE.getMessage());
+
+    }
+
+    private void generateTodos() {
+        for (int i = 0; i < 3; i++) {
+            User user = createUser("username" + i, "testPassword" + i);
+            for (int j = 0; j < 5; j++) {
+                createTodo("todo" + i + j, "content" + i + j, user);
+            }
+        }
+    }
+
 
     private void createComment(String content, Todo todo, User user) {
         commentRepository.saveAndFlush(Comment.builder()
