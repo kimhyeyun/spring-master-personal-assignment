@@ -55,6 +55,17 @@ public interface TodoService {
     * */
     TodoResponse finishedTodo(Long id, User user);
 
+    /*
+    * 할 일 검색
+    *
+    * @param type : 검색 타입(제목, 내용)
+    * @param keyword : 검색어
+    * @param cursor : 표시할 페이지 위치
+    * @param size : 페이지 총 크기
+    * @param User : 검색 요청한 유저 정보
+    *
+    * @return List<TodoResponse> : 검색한 할 일 응답 정보 리스트
+    * */
 
     List<TodoResponse> searchTodo(String type, String keyword, Integer cursor, Integer size, User user);
 }
