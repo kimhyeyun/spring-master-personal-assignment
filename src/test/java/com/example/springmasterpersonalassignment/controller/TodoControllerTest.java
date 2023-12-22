@@ -2,8 +2,10 @@ package com.example.springmasterpersonalassignment.controller;
 
 import com.example.springmasterpersonalassignment.MockSpringSecurityFilter;
 import com.example.springmasterpersonalassignment.config.WebSecurityConfig;
-import com.example.springmasterpersonalassignment.dto.request.TodoRequestDto;
-import com.example.springmasterpersonalassignment.dto.response.TodoResponseDto;
+import com.example.springmasterpersonalassignment.constant.ErrorCode;
+import com.example.springmasterpersonalassignment.constant.SuccessCode;
+import com.example.springmasterpersonalassignment.dto.request.TodoRequest;
+import com.example.springmasterpersonalassignment.dto.response.TodoResponse;
 import com.example.springmasterpersonalassignment.entity.Todo;
 import com.example.springmasterpersonalassignment.entity.User;
 import com.example.springmasterpersonalassignment.exception.CustomException;
@@ -11,6 +13,7 @@ import com.example.springmasterpersonalassignment.repository.UserRepository;
 import com.example.springmasterpersonalassignment.security.UserDetailsImpl;
 import com.example.springmasterpersonalassignment.service.TodoService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,19 +23,24 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.security.Principal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -88,15 +96,12 @@ class TodoControllerTest {
         // Given
         this.mockUserSetup();
 
-        TodoRequestDto requestDto = TodoRequestDto.builder()
-                .title("뭐하지")
-                .content("공부하자")
-                .build();
+        TodoRequest requestDto = new TodoRequest("뭐하지", "공부하자");
 
-        Todo todo = createTodo(requestDto.getTitle(), requestDto.getContent(), userDetails.getUser());
+        Todo todo = createTodo(requestDto.title(), requestDto.content(), userDetails.getUser());
 
         // When
-        TodoResponseDto response = TodoResponseDto.of(todo);
+        TodoResponse response = TodoResponse.of(todo);
         given(todoService.createTodo(any(), any())).willReturn(response);
         
         // Then
@@ -107,10 +112,10 @@ class TodoControllerTest {
                         .principal(principal)
                 )
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.title").value(requestDto.getTitle()))
-                .andExpect(jsonPath("$.content").value(requestDto.getContent()))
+                .andExpect(jsonPath("$.data.title").value(requestDto.title()))
+                .andExpect(jsonPath("$.data.content").value(requestDto.content()))
+                .andExpect(jsonPath("$.data.username").value(userDetails.getUser().getUsername()))
                 .andDo(print());
-
     }
 
     @Test
@@ -121,16 +126,12 @@ class TodoControllerTest {
         User otherUser = createUser("whoareyou", "123456789");
 
         Todo todo = createTodo("뭐하지", "공부하자", otherUser);
-        TodoRequestDto requestDto = TodoRequestDto.builder()
-                .title("변경하자")
-                .content("휴식이다")
-                .build();
+        TodoRequest requestDto = new TodoRequest("변경하자", "휴식이다");
 
-        CustomException c = new CustomException("권한이 없습니다.");
+        CustomException c = new CustomException(ErrorCode.ACCESS_DENIED);
         given(todoService.modifyTodo(anyLong(), any(), any())).willThrow(c);
 
-        // When
-        // Then
+        // When && Then
         mvc.perform(put("/api/todos/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(requestDto))
@@ -149,18 +150,14 @@ class TodoControllerTest {
         this.mockUserSetup();
 
         Todo todo = createTodo("뭐하지", "공부하자", userDetails.getUser());
-        TodoRequestDto requestDto = TodoRequestDto.builder()
-                .title("변경하자")
-                .content("휴식이다")
-                .build();
+        TodoRequest requestDto = new TodoRequest("변경하자", "휴식이다");
 
         todo.modify(requestDto);
 
-        TodoResponseDto response = TodoResponseDto.of(todo);
+        TodoResponse response = TodoResponse.of(todo);
         given(todoService.modifyTodo(anyLong(), any(), any())).willReturn(response);
 
-        // When
-        // Then
+        // When && Then
         mvc.perform(put("/api/todos/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(mapper.writeValueAsString(requestDto))
@@ -168,8 +165,8 @@ class TodoControllerTest {
                         .principal(principal)
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value(requestDto.getTitle()))
-                .andExpect(jsonPath("$.content").value(requestDto.getContent()))
+                .andExpect(jsonPath("$.data.title").value(requestDto.title()))
+                .andExpect(jsonPath("$.data.content").value(requestDto.content()))
                 .andDo(print());
     }
 
@@ -179,16 +176,16 @@ class TodoControllerTest {
         // Given
         this.mockUserSetup();
 
-        CustomException c = new CustomException("권한이 없습니다.");
-        given(todoService.deleteTodo(anyLong(), any())).willThrow(c);
+        willThrow(new CustomException(ErrorCode.ACCESS_DENIED)).given(todoService).deleteTodo(anyLong(), any());
 
-        // When
-        // Then
+        // When && Then
         mvc.perform(delete("/api/todos/1")
                         .principal(principal)
                 )
                 .andExpect((result) -> assertTrue(result.getResolvedException().getClass().isAssignableFrom(CustomException.class)))
+                .andExpect(jsonPath("$.message").value(ErrorCode.ACCESS_DENIED.getMessage()))
                 .andDo(print());
+
     }
 
     @Test
@@ -199,15 +196,13 @@ class TodoControllerTest {
 
         // When & Then
         Todo todo = createTodo("뭐하지", "과제 제출", userDetails.getUser());
-
-        String result = "삭제 성공";
-        given(todoService.deleteTodo(anyLong(), any())).willReturn(result);
+        willDoNothing().given(todoService).deleteTodo(anyLong(), any());
 
         mvc.perform(delete("/api/todos/1")
                         .principal(principal)
                 )
                 .andExpect(status().isOk())
-                .andExpect(content().string("삭제 성공"))
+                .andExpect(jsonPath("$.message").value(SuccessCode.SUCCESS_DELETE_TODO.getMessage()))
                 .andDo(print());
     }
 
@@ -216,14 +211,16 @@ class TodoControllerTest {
     void givenWrongUser_whenIsFinished_thenFail() throws Exception {
         // Given
         this.mockUserSetup();
-        given(todoService.finishedTodo(eq(1L), any(User.class))).willThrow(new CustomException("권한이 없습니다."));
+        given(todoService.finishedTodo(eq(1L), any(User.class))).willThrow(new CustomException(ErrorCode.ACCESS_DENIED));
 
         // When & Then
         mvc.perform(put("/api/todos/finish/1")
                         .accept(MediaType.APPLICATION_JSON)
                         .principal(principal)
                 )
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.message").value(ErrorCode.ACCESS_DENIED.getMessage()))
+                .andDo(print());
     }
 
     @Test
@@ -232,12 +229,7 @@ class TodoControllerTest {
         // Given
         this.mockUserSetup();
 
-        TodoResponseDto responseDto = TodoResponseDto.builder()
-                .title("과제 완료")
-                .content("하자!")
-                .username(userDetails.getUsername())
-                .isFinished(true)
-                .build();
+        TodoResponse responseDto = new TodoResponse(1L, "과제 완료", "하자!", userDetails.getUsername(), true, LocalDateTime.now(), LocalDateTime.now());
 
         given(todoService.finishedTodo(eq(1L), any(User.class))).willReturn(responseDto);
 
@@ -247,9 +239,61 @@ class TodoControllerTest {
                         .principal(principal)
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value(responseDto.getTitle()))
-                .andExpect(jsonPath("$.content").value(responseDto.getContent()))
-                .andExpect(jsonPath("$.finished").value(true))
+                .andExpect(jsonPath("$.data.title").value(responseDto.title()))
+                .andExpect(jsonPath("$.data.content").value(responseDto.content()))
+                .andExpect(jsonPath("$.data.isFinished").value(true))
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("할 일 검색 성공")
+    void givenSearchRequest_whenSearch_thenSuccess() throws Exception {
+        // Given
+        this.mockUserSetup();
+
+        List<TodoResponse> responses = List.of(
+                new TodoResponse(1L, "title1", "content1", userDetails.getUsername(), true, LocalDateTime.now(), LocalDateTime.now()),
+                new TodoResponse(2L, "title2", "content2", userDetails.getUsername(), false, LocalDateTime.now(), LocalDateTime.now()),
+                new TodoResponse(3L, "title3", "content3", userDetails.getUsername(), false, LocalDateTime.now(), LocalDateTime.now()),
+                new TodoResponse(4L, "title4", "content4", userDetails.getUsername(), true, LocalDateTime.now(), LocalDateTime.now())
+        );
+
+        given(todoService.searchTodo(any(), any(), any(), any(), any())).willReturn(responses);
+
+        // When && Then
+        mvc.perform(get("/api/todos")
+                        .param("keyword", "title")
+                        .param("type", "title")
+                        .param("cursor", "0")
+                        .param("size", "4")
+                        .principal(principal)
+                        .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value(SuccessCode.SUCCESS_SEARCH_TODO.getMessage()))
+                .andExpect(jsonPath("$.data", hasSize(4)))
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("할 일 검색 실패")
+    void givenWrongSearchRequest_whenSearch_thenFail() throws Exception {
+        // Given
+        this.mockUserSetup();
+
+        given(todoService.searchTodo(any(), any(), any(), any(), any())).willThrow(new CustomException(ErrorCode.INVALID_TYPE));
+
+        // When && Then
+        mvc.perform(get("/api/todos")
+                        .param("keyword", "cont")
+                        .param("type", "title")
+                        .param("cursor", "0")
+                        .param("size", "4")
+                        .principal(principal)
+                        .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(ErrorCode.INVALID_TYPE.getMessage()))
                 .andDo(print());
     }
 
