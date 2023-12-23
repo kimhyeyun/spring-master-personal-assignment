@@ -1,5 +1,12 @@
 ## 회원가입, 로그인 기능이 있는 투두앱 백엔드 서버 만들기
 
+#### AWS S3 이용한 이미지 저장 기
+![img_1.png](img_1.png)
+#### AWS 내의 mysql 설정
+![img_2.png](img_2.png)
+#### AWS EC2를 이용한 동작 성공
+![img_3.png](img_3.png)
+
 ### 📌기능 요구사항
 - [X]  **🆕 회원 가입 API**
     - username, password를 Client에서 전달받기
